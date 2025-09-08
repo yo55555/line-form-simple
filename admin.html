@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - LINE Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #1f2937;
+            font-size: 24px;
+        }
+        
+        .header .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .tabs {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            background: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .tab-button.active {
+            background: white;
+            color: #22c55e;
+            border-bottom: 2px solid #22c55e;
+        }
+        
+        .tab-content {
+            padding: 30px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .color-option.selected {
+            border-color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #22c55e;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .page-setting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .page-setting:last-child {
+            border-bottom: none;
+        }
+        
+        .page-info h3 {
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .page-info p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #22c55e;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .quick-action {
+            padding: 15px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .quick-action:hover {
+            background: #e5e7eb;
+        }
+        
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+        
+        @media (max-width: 768px) {
+            .tab-buttons {
+                flex-direction: column;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- หน้าล็อกอิน -->
+    <div id="login-page">
+        <div class="login-form">
+            <h2 class="login-title">เข้าสู่ระบบ Admin Panel</h2>
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" id="username" class="form-input" placeholder="Username">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="password" class="form-input" placeholder="Password">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="login()">เข้าสู่ระบบ</button>
+        </div>
+    </div>
+
+    <!-- หน้า Admin Panel -->
+    <div id="admin-page" style="display: none;">
+        <div class="header">
+            <div>
+                <h1>Admin Panel</h1>
+                <div class="subtitle">จัดการเว็บไซต์ฟอร์ม LINE</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+        </div>
+
+        <div class="container">
+            <div class="tabs">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="showTab('dashboard')">Dashboard</button>
+                    <button class="tab-button" onclick="showTab('content')">แก้ไขเนื้อหา</button>
+                    <button class="tab-button" onclick="showTab('theme')">ธีมและสี</button>
+                    <button class="tab-button" onclick="showTab('data')">ข้อมูลฟอร์ม</button>
+                    <button class="tab-button" onclick="showTab('pages')">จัดการหน้า</button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Dashboard -->
+                    <div id="dashboard" class="tab-panel active">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number" id="total-users">127</div>
+                                <div class="stat-label">ผู้เข้าชมทั้งหมด</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="form-submissions">89</div>
+                                <div class="stat-label">ฟอร์มที่ส่งแล้ว</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="success-rate">70%</div>
+                                <div class="stat-label">อัตราสำเร็จ</div>
+                            </div>
+                        </div>
+
+                        <h3>การดำเนินการด่วน</h3>
+                        <div class="quick-actions">
+                            <button class="quick-action" onclick="openWebsite()">🏠 หน้าหลัก</button>
+                            <button class="quick-action" onclick="openWebsite('#email')">📧 หน้าอีเมล</button>
+                            <button class="quick-action" onclick="openWebsite('#form')">📝 หน้าฟอร์ม</button>
+                            <button class="quick-action" onclick="openWebsite('#qr')">📱 QR Code</button>
+                            <button class="quick-action" onclick="downloadConfig()">💾 ดาวน์โหลดการตั้งค่า</button>
+                            <button class="quick-action" onclick="copyWebsiteLink()">🔗 คัดลอกลิงก์</button>
+                        </div>
+                    </div>
+
+                    <!-- แก้ไขเนื้อหา -->
+                    <div id="content" class="tab-panel">
+                        <div class="success-message" id="content-success">บันทึกการเปลี่ยนแปลงสำเร็จ!</div>
+                        
+                        <h3>หน้ารหัสยืนยันตัวตน</h3>
+                        <div class="form-group">
+                            <label class="form-label">หัวข้อหลัก</label>
+                            <input type="text" id="verification-title" class="form-input" value="รหัสยืนยันตัวตน">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">คำอธิบาย</label>
+                            <textarea id="verification-subtitle" class="form-textarea">กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย</textarea>
+                        </div>
+
+                        <h3>หน้าล็อกอินด้วยอีเมล</h3>
+                        <div class="form-group">
+                            <label class="form-label">หัวข้อหลัก</label>
+                            <input type="text" id="email-title" class="form-input" value="LINE">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ป้ายอีเมล</label>
+                            <input type="text" id="email-label" class="form-input" value="อีเมล">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ป้ายรหัสผ่าน</label>
+                            <input type="text" id="password-label" class="form-input" value="รหัสผ่าน">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ปุ่มเข้าสู่ระบบ</label>
+                            <input type="text" id="login-button" class="form-input" value="เข้าสู่ระบบ">
+                        </div>
+
+                        <h3>หน้าฟอร์มข้อมูล</h3>
+                        <div class="form-group">
+                            <label class="form-label">ป้ายชื่อ</label>
+                            <input type="text" id="firstname-label" class="form-input" value="ชื่อ">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ป้ายนามสกุล</label>
+                            <input type="text" id="lastname-label" class="form-input" value="นามสกุล">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ปุ่มยืนยัน</label>
+                            <input type="text" id="submit-button" class="form-input" value="ยืนยัน">
+                        </div>
+
+                        <h3>หน้า QR Code</h3>
+                        <div class="form-group">
+                            <label class="form-label">หัวข้อหลัก</label>
+                            <input type="text" id="qr-title" class="form-input" value="เข้าสู่ระบบด้วยคิวอาร์โค้ด">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">คำอธิบาย</label>
+                            <textarea id="qr-subtitle" class="form-textarea">โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับมือถือใหม่ แล้วกดสแกนคิวอาร์โค้ด</textarea>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="saveContent()">บันทึกการเปลี่ยนแปลง</button>
+                        <button class="btn btn-secondary" onclick="openWebsite()">ดูตัวอย่าง</button>
+                    </div>
+
+                    <!-- ธีมและสี -->
+                    <div id="theme" class="tab-panel">
+                        <div class="success-message" id="theme-success">บันทึกธีมสำเร็จ!</div>
+                        
+                        <h3>ธีมสำเร็จรูป</h3>
+                        <div class="color-picker">
+                            <div class="color-option selected" style="background: #22c55e;" onclick="selectTheme('#22c55e', '#3b82f6', '#f8fafc')" title="LINE เขียว"></div>
+                            <div class="color-option" style="background: #3b82f6;" onclick="selectTheme('#3b82f6', '#22c55e', '#f8fafc')" title="น้ำเงิน"></div>
+                            <div class="color-option" style="background: #ef4444;" onclick="selectTheme('#ef4444', '#f59e0b', '#fef2f2')" title="แดง"></div>
+                            <div class="color-option" style="background: #8b5cf6;" onclick="selectTheme('#8b5cf6', '#ec4899', '#faf5ff')" title="ม่วง"></div>
+                        </div>
+
+                        <h3>ปรับแต่งสีเอง</h3>
+                        <div class="form-group">
+                            <label class="form-label">สีหลัก (Primary)</label>
+                            <input type="color" id="primary-color" class="form-input" value="#22c55e">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">สีรอง (Secondary)</label>
+                            <input type="color" id="secondary-color" class="form-input" value="#3b82f6">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">สีพื้นหลัง</label>
+                            <input type="color" id="background-color" class="form-input" value="#f8fafc">
+                        </div>
+
+                        <button class="btn btn-primary" onclick="saveTheme()">บันทึกธีม</button>
+                        <button class="btn btn-secondary" onclick="openWebsite()">ดูตัวอย่าง</button>
+                    </div>
+
+                    <!-- ข้อมูลฟอร์ม -->
+                    <div id="data" class="tab-panel">
+                        <h3>สถิติการใช้งาน</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number" id="data-total">0</div>
+                                <div class="stat-label">ข้อมูลทั้งหมด</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="data-today">0</div>
+                                <div class="stat-label">วันนี้</div>
+                            </div>
+                        </div>
+
+                        <h3>ข้อมูลล่าสุด</h3>
+                        <div id="form-data-table">
+                            <p>ไม่มีข้อมูลฟอร์ม</p>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="exportData()">ส่งออกข้อมูล CSV</button>
+                        <button class="btn btn-secondary" onclick="clearData()">ล้างข้อมูล</button>
+                    </div>
+
+                    <!-- จัดการหน้า -->
+                    <div id="pages" class="tab-panel">
+                        <div class="success-message" id="pages-success">บันทึกการตั้งค่าหน้าสำเร็จ!</div>
+                        
+                        <h3>จัดการหน้า</h3>
+                        <p style="color: #6b7280; margin-bottom: 20px;">เปิด/ปิดการแสดงหน้าต่างๆ ในเว็บไซต์</p>
+
+                        <div class="page-setting">
+                            <div class="page-info">
+                                <h3>หน้ารหัสยืนยันตัวตน</h3>
+                                <p>แสดงรหัส 4 หลักพร้อมตัวนับเวลา</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="page-verification" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="page-setting">
+                            <div class="page-info">
+                                <h3>หน้าล็อกอินด้วยอีเมล</h3>
+                                <p>ฟอร์มกรอกอีเมลและรหัสผ่าน</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="page-email" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="page-setting">
+                            <div class="page-info">
+                                <h3>หน้าฟอร์มข้อมูล</h3>
+                                <p>ฟอร์มกรอกชื่อ-นามสกุล</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="page-form" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="page-setting">
+                            <div class="page-info">
+                                <h3>หน้า QR Code</h3>
+                                <p>แสดง QR Code สำหรับเข้าสู่ระบบ</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="page-qr" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div style="margin-top: 30px;">
+                            <button class="btn btn-primary" onclick="savePages()">บันทึกการตั้งค่า</button>
+                            <button class="btn btn-secondary" onclick="openWebsite()">ดูตัวอย่าง</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ตัวแปรสำหรับเก็บการตั้งค่า
+        let config = {
+            texts: {
+                verificationTitle: 'รหัสยืนยันตัวตน',
+                verificationSubtitle: 'กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย',
+                emailTitle: 'LINE',
+                emailLabel: 'อีเมล',
+                passwordLabel: 'รหัสผ่าน',
+                loginButton: 'เข้าสู่ระบบ',
+                firstnameLabel: 'ชื่อ',
+                lastnameLabel: 'นามสกุล',
+                submitButton: 'ยืนยัน',
+                qrTitle: 'เข้าสู่ระบบด้วยคิวอาร์โค้ด',
+                qrSubtitle: 'โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับมือถือใหม่ แล้วกดสแกนคิวอาร์โค้ด'
+            },
+            colors: {
+                primary: '#22c55e',
+                secondary: '#3b82f6',
+                background: '#f8fafc'
+            },
+            pages: {
+                verification: true,
+                email: true,
+                form: true,
+                qr: true
+            }
+        };
+
+        // ฟังก์ชันล็อกอิน
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username === 'admin' && password === 'admin123') {
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('admin-page').style.display = 'block';
+                loadConfig();
+                loadFormData();
+            } else {
+                alert('Username หรือ Password ไม่ถูกต้อง');
+            }
+        }
+
+        // ฟังก์ชันออกจากระบบ
+        function logout() {
+            document.getElementById('login-page').style.display = 'block';
+            document.getElementById('admin-page').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // ฟังก์ชันเปลี่ยนแท็บ
+        function showTab(tabName) {
+            // ซ่อนแท็บทั้งหมด
+            const panels = document.querySelectorAll('.tab-panel');
+            panels.forEach(panel => panel.classList.remove('active'));
+            
+            // ลบ active จากปุ่มทั้งหมด
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // แสดงแท็บที่เลือก
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // โหลดการตั้งค่า
+        function loadConfig() {
+            try {
+                const saved = localStorage.getItem('lineFormConfig');
+                if (saved) {
+                    config = { ...config, ...JSON.parse(saved) };
+                }
+                updateFormFields();
+            } catch (e) {
+                console.log('ไม่สามารถโหลดการตั้งค่าได้');
+            }
+        }
+
+        // อัปเดตฟิลด์ฟอร์ม
+        function updateFormFields() {
+            document.getElementById('verification-title').value = config.texts.verificationTitle;
+            document.getElementById('verification-subtitle').value = config.texts.verificationSubtitle;
+            document.getElementById('email-title').value = config.texts.emailTitle;
+            document.getElementById('email-label').value = config.texts.emailLabel;
+            document.getElementById('password-label').value = config.texts.passwordLabel;
+            document.getElementById('login-button').value = config.texts.loginButton;
+            document.getElementById('firstname-label').value = config.texts.firstnameLabel;
+            document.getElementById('lastname-label').value = config.texts.lastnameLabel;
+            document.getElementById('submit-button').value = config.texts.submitButton;
+            document.getElementById('qr-title').value = config.texts.qrTitle;
+            document.getElementById('qr-subtitle').value = config.texts.qrSubtitle;
+            
+            document.getElementById('primary-color').value = config.colors.primary;
+            document.getElementById('secondary-color').value = config.colors.secondary;
+            document.getElementById('background-color').value = config.colors.background;
+            
+            document.getElementById('page-verification').checked = config.pages.verification;
+            document.getElementById('page-email').checked = config.pages.email;
+            document.getElementById('page-form').checked = config.pages.form;
+            document.getElementById('page-qr').checked = config.pages.qr;
+        }
+
+        // บันทึกเนื้อหา
+        function saveContent() {
+            config.texts = {
+                verificationTitle: document.getElementById('verification-title').value,
+                verificationSubtitle: document.getElementById('verification-subtitle').value,
+                emailTitle: document.getElementById('email-title').value,
+                emailLabel: document.getElementById('email-label').value,
+                passwordLabel: document.getElementById('password-label').value,
+                loginButton: document.getElementById('login-button').value,
+                firstnameLabel: document.getElementById('firstname-label').value,
+                lastnameLabel: document.getElementById('lastname-label').value,
+                submitButton: document.getElementById('submit-button').value,
+                qrTitle: document.getElementById('qr-title').value,
+                qrSubtitle: document.getElementById('qr-subtitle').value
+            };
+            
+            localStorage.setItem('lineFormConfig', JSON.stringify(config));
+            showSuccessMessage('content-success');
+        }
+
+        // บันทึกธีม
+        function saveTheme() {
+            config.colors = {
+                primary: document.getElementById('primary-color').value,
+                secondary: document.getElementById('secondary-color').value,
+                background: document.getElementById('background-color').value
+            };
+            
+            localStorage.setItem('lineFormConfig', JSON.stringify(config));
+            showSuccessMessage('theme-success');
+        }
+
+        // บันทึกการตั้งค่าหน้า
+        function savePages() {
+            config.pages = {
+                verification: document.getElementById('page-verification').checked,
+                email: document.getElementById('page-email').checked,
+                form: document.getElementById('page-form').checked,
+                qr: document.getElementById('page-qr').checked
+            };
+            
+            localStorage.setItem('lineFormConfig', JSON.stringify(config));
+            showSuccessMessage('pages-success');
+        }
+
+        // เลือกธีม
+        function selectTheme(primary, secondary, background) {
+            document.getElementById('primary-color').value = primary;
+            document.getElementById('secondary-color').value = secondary;
+            document.getElementById('background-color').value = background;
+            
+            // อัปเดต UI
+            const options = document.querySelectorAll('.color-option');
+            options.forEach(option => option.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        // แสดงข้อความสำเร็จ
+        function showSuccessMessage(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+
+        // เปิดเว็บไซต์
+        function openWebsite(hash = '') {
+            window.open('./index.html' + hash, '_blank');
+        }
+
+        // ดาวน์โหลดการตั้งค่า
+        function downloadConfig() {
+            const dataStr = JSON.stringify(config, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'line-form-config.json';
+            link.click();
+        }
+
+        // คัดลอกลิงก์เว็บไซต์
+        function copyWebsiteLink() {
+            const url = window.location.href.replace('admin.html', 'index.html');
+            navigator.clipboard.writeText(url).then(() => {
+                alert('คัดลอกลิงก์เรียบร้อย!');
+            });
+        }
+
+        // โหลดข้อมูลฟอร์ม
+        function loadFormData() {
+            try {
+                const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+                document.getElementById('data-total').textContent = submissions.length;
+                
+                // นับข้อมูลวันนี้
+                const today = new Date().toDateString();
+                const todaySubmissions = submissions.filter(sub => 
+                    new Date(sub.timestamp).toDateString() === today
+                );
+                document.getElementById('data-today').textContent = todaySubmissions.length;
+                
+                // แสดงตารางข้อมูล
+                if (submissions.length > 0) {
+                    let tableHTML = '<table style="width: 100%; border-collapse: collapse;">';
+                    tableHTML += '<tr style="background: #f3f4f6;"><th style="padding: 10px; border: 1px solid #e5e7eb;">อีเมล</th><th style="padding: 10px; border: 1px solid #e5e7eb;">ชื่อ</th><th style="padding: 10px; border: 1px solid #e5e7eb;">นามสกุล</th><th style="padding: 10px; border: 1px solid #e5e7eb;">เวลา</th></tr>';
+                    
+                    submissions.slice(-10).reverse().forEach(sub => {
+                        tableHTML += `<tr>
+                            <td style="padding: 10px; border: 1px solid #e5e7eb;">${sub.email}</td>
+                            <td style="padding: 10px; border: 1px solid #e5e7eb;">${sub.firstName}</td>
+                            <td style="padding: 10px; border: 1px solid #e5e7eb;">${sub.lastName}</td>
+                            <td style="padding: 10px; border: 1px solid #e5e7eb;">${new Date(sub.timestamp).toLocaleString('th-TH')}</td>
+                        </tr>`;
+                    });
+                    
+                    tableHTML += '</table>';
+                    document.getElementById('form-data-table').innerHTML = tableHTML;
+                }
+            } catch (e) {
+                console.log('ไม่สามารถโหลดข้อมูลฟอร์มได้');
+            }
+        }
+
+        // ส่งออกข้อมูล CSV
+        function exportData() {
+            try {
+                const submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+                if (submissions.length === 0) {
+                    alert('ไม่มีข้อมูลให้ส่งออก');
+                    return;
+                }
+                
+                let csv = 'อีเมล,ชื่อ,นามสกุล,เวลา\n';
+                submissions.forEach(sub => {
+                    csv += `"${sub.email}","${sub.firstName}","${sub.lastName}","${new Date(sub.timestamp).toLocaleString('th-TH')}"\n`;
+                });
+                
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'form-data.csv';
+                link.click();
+            } catch (e) {
+                alert('ไม่สามารถส่งออกข้อมูลได้');
+            }
+        }
+
+        // ล้างข้อมูล
+        function clearData() {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะล้างข้อมูลทั้งหมด?')) {
+                localStorage.removeItem('formSubmissions');
+                loadFormData();
+                alert('ล้างข้อมูลเรียบร้อย');
+            }
+        }
+
+        // เริ่มต้นเมื่อโหลดหน้า
+        window.onload = function() {
+            // ตรวจสอบการล็อกอิน
+            const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+            if (isLoggedIn) {
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('admin-page').style.display = 'block';
+                loadConfig();
+                loadFormData();
+            }
+        };
+
+        // Enter key สำหรับล็อกอิน
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>
+

