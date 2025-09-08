@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Page Builder - LINE Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 20px;
+            color: #666;
+            text-decoration: none;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .nav-item.active {
+            background: #00C851;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-selector {
+            padding: 8px 12px;
+            border: 2px solid #00C851;
+            border-radius: 5px;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .editor-workspace {
+            flex: 1;
+            display: flex;
+        }
+
+        /* Tools Panel */
+        .tools-panel {
+            width: 200px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .panel-header {
+            padding: 12px 15px;
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tool-buttons {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tool-btn {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .tool-btn:hover {
+            background: #e9ecef;
+            border-color: #00C851;
+        }
+
+        .properties-panel {
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .property-group {
+            margin-bottom: 15px;
+        }
+
+        .property-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .property-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .property-input:focus {
+            outline: none;
+            border-color: #00C851;
+        }
+
+        /* Canvas */
+        .canvas-container {
+            flex: 1;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .canvas {
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-element {
+            position: absolute;
+            cursor: move;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .canvas-element:hover {
+            border-color: #00C851;
+        }
+
+        .canvas-element.selected {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .canvas-element .resize-handle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #007bff;
+            border: 1px solid white;
+            border-radius: 50%;
+            right: -4px;
+            bottom: -4px;
+            cursor: se-resize;
+        }
+
+        /* Layers Panel */
+        .layers-panel {
+            width: 200px;
+            background: white;
+            border-left: 1px solid #e0e0e0;
+        }
+
+        .layers-list {
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .layer-item {
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .layer-item:hover {
+            background: #e9ecef;
+        }
+
+        .layer-item.selected {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .layer-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #00C851;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #00A844;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #00C851;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Canvas Elements Styles */
+        .element-logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00C851;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .element-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .element-input:focus {
+            outline: none;
+            border-color: #00C851;
+        }
+
+        .element-button {
+            width: 100%;
+            padding: 12px;
+            background: #00C851;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .element-text {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+
+        .element-link {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .element-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Admin Panel</h3>
+                <p>จัดการไฟล์ฟอร์ม LINE</p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item">แก้ไขเนื้อหา</button>
+                <button class="nav-item">ธีมและสี</button>
+                <button class="nav-item">ข้อมูลฟอร์ม</button>
+                <button class="nav-item">จัดการหน้า</button>
+                <button class="nav-item active">🎨 Visual Editor</button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="editor-header">
+                <h2>🎨 Visual Page Builder</h2>
+                <span>แก้ไขหน้าเว็บแบบ Drag & Drop - เปลี่ยนแปลงทุกส่วนได้</span>
+                <div style="margin-left: auto;">
+                    <label>เลือกหน้าที่ต้องการแก้ไข:</label>
+                    <select class="page-selector" id="pageSelector">
+                        <option value="verification">หน้ารหัสยืนยันตัวตน</option>
+                        <option value="email" selected>หน้าล็อกอินด้วยอีเมล</option>
+                        <option value="form">หน้าฟอร์มข้อมูล</option>
+                        <option value="qr">หน้า QR Code</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Workspace -->
+            <div class="editor-workspace">
+                <!-- Tools Panel -->
+                <div class="tools-panel">
+                    <div class="panel-section">
+                        <div class="panel-header">🛠️ เครื่องมือ</div>
+                        <div class="tool-buttons">
+                            <button class="tool-btn" onclick="addElement('text')">📝 ข้อความ</button>
+                            <button class="tool-btn" onclick="addElement('input')">📋 ช่องกรอก</button>
+                            <button class="tool-btn" onclick="addElement('button')">🔘 ปุ่ม</button>
+                            <button class="tool-btn" onclick="addElement('logo')">🖼️ โลโก้</button>
+                            <button class="tool-btn" onclick="addElement('link')">🔗 ลิงก์</button>
+                            <button class="tool-btn" onclick="addElement('divider')">➖ เส้นแบ่ง</button>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section">
+                        <div class="panel-header">⚙️ คุณสมบัติ</div>
+                        <div class="properties-panel" id="propertiesPanel">
+                            <div class="property-group">
+                                <label class="property-label">ตำแหน่ง X:</label>
+                                <input type="number" class="property-input" id="propX" onchange="updateElementProperty('left', this.value + 'px')">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">ตำแหน่ง Y:</label>
+                                <input type="number" class="property-input" id="propY" onchange="updateElementProperty('top', this.value + 'px')">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">ความกว้าง:</label>
+                                <input type="number" class="property-input" id="propWidth" onchange="updateElementProperty('width', this.value + 'px')">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">ความสูง:</label>
+                                <input type="number" class="property-input" id="propHeight" onchange="updateElementProperty('height', this.value + 'px')">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">สีพื้นหลัง:</label>
+                                <input type="color" class="property-input" id="propBgColor" onchange="updateElementProperty('backgroundColor', this.value)">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">สีข้อความ:</label>
+                                <input type="color" class="property-input" id="propTextColor" onchange="updateElementProperty('color', this.value)">
+                            </div>
+                            <div class="property-group">
+                                <label class="property-label">ข้อความ:</label>
+                                <input type="text" class="property-input" id="propText" onchange="updateElementText(this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div class="canvas-container">
+                    <div class="canvas" id="canvas">
+                        <!-- Email Page Elements -->
+                        <div class="canvas-element element-logo" id="logo" style="top: 30px; left: 50%; transform: translateX(-50%); width: 100px;">
+                            LINE
+                        </div>
+                        <div class="canvas-element element-input" id="email" style="top: 120px; left: 30px; width: 340px; height: 45px;" placeholder="bn9.club@gmail.com">
+                            <input type="email" placeholder="bn9.club@gmail.com" style="width: 100%; height: 100%; border: none; padding: 12px; border-radius: 5px; border: 1px solid #ddd;">
+                        </div>
+                        <div class="canvas-element element-input" id="password" style="top: 180px; left: 30px; width: 340px; height: 45px;">
+                            <input type="password" placeholder="••••••••" style="width: 100%; height: 100%; border: none; padding: 12px; border-radius: 5px; border: 1px solid #ddd;">
+                        </div>
+                        <div class="canvas-element element-button" id="login-btn" style="top: 240px; left: 30px; width: 340px; height: 50px;">
+                            เข้าสู่ระบบ
+                        </div>
+                        <div class="canvas-element element-divider" id="divider" style="top: 310px; left: 30px; width: 340px; height: 1px;"></div>
+                        <div class="canvas-element element-text" id="forgot" style="top: 330px; left: 50%; transform: translateX(-50%); width: 200px;">
+                            เข้าสู่ระบบด้วยคิวอาร์โค้ด
+                        </div>
+                        <div class="canvas-element element-link" id="forgot-link" style="top: 360px; left: 50%; transform: translateX(-50%); width: 150px;">
+                            ลืมรหัสผ่านหรือไม่?
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Layers Panel -->
+                <div class="layers-panel">
+                    <div class="panel-header">📋 เลเยอร์</div>
+                    <div class="layers-list" id="layersList">
+                        <div class="layer-item" data-element="logo">
+                            <span class="layer-icon">🖼️</span>
+                            <span>logo</span>
+                        </div>
+                        <div class="layer-item" data-element="email">
+                            <span class="layer-icon">📧</span>
+                            <span>email</span>
+                        </div>
+                        <div class="layer-item" data-element="password">
+                            <span class="layer-icon">🔒</span>
+                            <span>password</span>
+                        </div>
+                        <div class="layer-item" data-element="login-btn">
+                            <span class="layer-icon">🔘</span>
+                            <span>login-btn</span>
+                        </div>
+                        <div class="layer-item" data-element="divider">
+                            <span class="layer-icon">➖</span>
+                            <span>divider</span>
+                        </div>
+                        <div class="layer-item" data-element="forgot">
+                            <span class="layer-icon">📝</span>
+                            <span>forgot</span>
+                        </div>
+                        <div class="layer-item" data-element="forgot-link">
+                            <span class="layer-icon">🔗</span>
+                            <span>forgot-link</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="action-btn btn-primary" onclick="saveChanges()">💾 บันทึกการเปลี่ยนแปลง</button>
+                <button class="action-btn btn-secondary" onclick="previewChanges()">👁️ ดูตัวอย่าง</button>
+                <button class="action-btn btn-info" onclick="resetChanges()">🔄 รีเซ็ต</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let selectedElement = null;
+        let isDragging = false;
+        let isResizing = false;
+        let dragOffset = { x: 0, y: 0 };
+
+        // Initialize editor
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEditor();
+        });
+
+        function initializeEditor() {
+            // Add event listeners to canvas elements
+            const elements = document.querySelectorAll('.canvas-element');
+            elements.forEach(element => {
+                makeElementInteractive(element);
+            });
+
+            // Add event listeners to layer items
+            const layerItems = document.querySelectorAll('.layer-item');
+            layerItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const elementId = this.dataset.element;
+                    selectElement(document.getElementById(elementId));
+                });
+            });
+
+            // Canvas click to deselect
+            document.getElementById('canvas').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    deselectElement();
+                }
+            });
+        }
+
+        function makeElementInteractive(element) {
+            // Click to select
+            element.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectElement(this);
+            });
+
+            // Double click to edit text
+            element.addEventListener('dblclick', function(e) {
+                e.stopPropagation();
+                editElementText(this);
+            });
+
+            // Mouse down for dragging
+            element.addEventListener('mousedown', function(e) {
+                if (e.target.classList.contains('resize-handle')) {
+                    startResize(e, this);
+                } else {
+                    startDrag(e, this);
+                }
+            });
+
+            // Add resize handle
+            if (!element.querySelector('.resize-handle')) {
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                element.appendChild(handle);
+            }
+        }
+
+        function selectElement(element) {
+            // Remove previous selection
+            deselectElement();
+            
+            // Select new element
+            selectedElement = element;
+            element.classList.add('selected');
+            
+            // Update layers panel
+            updateLayersPanel();
+            
+            // Update properties panel
+            updatePropertiesPanel();
+        }
+
+        function deselectElement() {
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+                selectedElement = null;
+            }
+            
+            // Clear layer selection
+            document.querySelectorAll('.layer-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+
+        function updateLayersPanel() {
+            if (!selectedElement) return;
+            
+            document.querySelectorAll('.layer-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.element === selectedElement.id) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        function updatePropertiesPanel() {
+            if (!selectedElement) return;
+            
+            const rect = selectedElement.getBoundingClientRect();
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            
+            document.getElementById('propX').value = Math.round(selectedElement.offsetLeft);
+            document.getElementById('propY').value = Math.round(selectedElement.offsetTop);
+            document.getElementById('propWidth').value = Math.round(selectedElement.offsetWidth);
+            document.getElementById('propHeight').value = Math.round(selectedElement.offsetHeight);
+            
+            const computedStyle = window.getComputedStyle(selectedElement);
+            document.getElementById('propBgColor').value = rgbToHex(computedStyle.backgroundColor);
+            document.getElementById('propTextColor').value = rgbToHex(computedStyle.color);
+            
+            // Get text content
+            const textContent = selectedElement.textContent || selectedElement.querySelector('input')?.placeholder || '';
+            document.getElementById('propText').value = textContent;
+        }
+
+        function updateElementProperty(property, value) {
+            if (!selectedElement) return;
+            
+            selectedElement.style[property] = value;
+            showNotification('อัปเดตคุณสมบัติสำเร็จ!');
+        }
+
+        function updateElementText(text) {
+            if (!selectedElement) return;
+            
+            if (selectedElement.querySelector('input')) {
+                selectedElement.querySelector('input').placeholder = text;
+            } else {
+                selectedElement.textContent = text;
+            }
+            showNotification('อัปเดตข้อความสำเร็จ!');
+        }
+
+        function startDrag(e, element) {
+            isDragging = true;
+            selectElement(element);
+            
+            const rect = element.getBoundingClientRect();
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            
+            e.preventDefault();
+        }
+
+        function drag(e) {
+            if (!isDragging || !selectedElement) return;
+            
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            
+            let newX = e.clientX - canvasRect.left - dragOffset.x;
+            let newY = e.clientY - canvasRect.top - dragOffset.y;
+            
+            // Constrain to canvas bounds
+            newX = Math.max(0, Math.min(newX, canvasRect.width - selectedElement.offsetWidth));
+            newY = Math.max(0, Math.min(newY, canvasRect.height - selectedElement.offsetHeight));
+            
+            selectedElement.style.left = newX + 'px';
+            selectedElement.style.top = newY + 'px';
+            
+            // Update properties panel
+            document.getElementById('propX').value = Math.round(newX);
+            document.getElementById('propY').value = Math.round(newY);
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function startResize(e, element) {
+            isResizing = true;
+            selectElement(element);
+            
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
+            
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function resize(e) {
+            if (!isResizing || !selectedElement) return;
+            
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            const elementRect = selectedElement.getBoundingClientRect();
+            
+            let newWidth = e.clientX - elementRect.left;
+            let newHeight = e.clientY - elementRect.top;
+            
+            // Minimum size constraints
+            newWidth = Math.max(50, newWidth);
+            newHeight = Math.max(20, newHeight);
+            
+            selectedElement.style.width = newWidth + 'px';
+            selectedElement.style.height = newHeight + 'px';
+            
+            // Update properties panel
+            document.getElementById('propWidth').value = Math.round(newWidth);
+            document.getElementById('propHeight').value = Math.round(newHeight);
+        }
+
+        function stopResize() {
+            isResizing = false;
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+        }
+
+        function editElementText(element) {
+            const currentText = element.textContent || element.querySelector('input')?.placeholder || '';
+            const newText = prompt('แก้ไขข้อความ:', currentText);
+            
+            if (newText !== null) {
+                updateElementText(newText);
+                document.getElementById('propText').value = newText;
+            }
+        }
+
+        function addElement(type) {
+            const canvas = document.getElementById('canvas');
+            const element = document.createElement('div');
+            element.className = 'canvas-element';
+            element.id = 'element-' + Date.now();
+            
+            // Set default position
+            element.style.position = 'absolute';
+            element.style.top = '50px';
+            element.style.left = '50px';
+            
+            switch(type) {
+                case 'text':
+                    element.className += ' element-text';
+                    element.textContent = 'ข้อความใหม่';
+                    element.style.width = '200px';
+                    element.style.height = '30px';
+                    break;
+                case 'input':
+                    element.className += ' element-input';
+                    element.innerHTML = '<input type="text" placeholder="ช่องกรอกใหม่" style="width: 100%; height: 100%; border: none; padding: 12px; border-radius: 5px; border: 1px solid #ddd;">';
+                    element.style.width = '300px';
+                    element.style.height = '45px';
+                    break;
+                case 'button':
+                    element.className += ' element-button';
+                    element.textContent = 'ปุ่มใหม่';
+                    element.style.width = '200px';
+                    element.style.height = '45px';
+                    break;
+                case 'logo':
+                    element.className += ' element-logo';
+                    element.textContent = 'LOGO';
+                    element.style.width = '100px';
+                    element.style.height = '40px';
+                    break;
+                case 'link':
+                    element.className += ' element-link';
+                    element.textContent = 'ลิงก์ใหม่';
+                    element.style.width = '150px';
+                    element.style.height = '25px';
+                    break;
+                case 'divider':
+                    element.className += ' element-divider';
+                    element.style.width = '300px';
+                    element.style.height = '1px';
+                    break;
+            }
+            
+            canvas.appendChild(element);
+            makeElementInteractive(element);
+            selectElement(element);
+            
+            // Add to layers panel
+            addToLayersPanel(element);
+            
+            showNotification('เพิ่มองค์ประกอบใหม่สำเร็จ!');
+        }
+
+        function addToLayersPanel(element) {
+            const layersList = document.getElementById('layersList');
+            const layerItem = document.createElement('div');
+            layerItem.className = 'layer-item';
+            layerItem.dataset.element = element.id;
+            
+            const icon = getElementIcon(element);
+            layerItem.innerHTML = `
+                <span class="layer-icon">${icon}</span>
+                <span>${element.id}</span>
+            `;
+            
+            layerItem.addEventListener('click', function() {
+                selectElement(element);
+            });
+            
+            layersList.appendChild(layerItem);
+        }
+
+        function getElementIcon(element) {
+            if (element.classList.contains('element-text')) return '📝';
+            if (element.classList.contains('element-input')) return '📋';
+            if (element.classList.contains('element-button')) return '🔘';
+            if (element.classList.contains('element-logo')) return '🖼️';
+            if (element.classList.contains('element-link')) return '🔗';
+            if (element.classList.contains('element-divider')) return '➖';
+            return '📄';
+        }
+
+        function saveChanges() {
+            // Collect all element data
+            const elements = document.querySelectorAll('.canvas-element');
+            const pageData = {};
+            
+            elements.forEach(element => {
+                const elementData = {
+                    id: element.id,
+                    type: getElementType(element),
+                    style: {
+                        top: element.style.top,
+                        left: element.style.left,
+                        width: element.style.width,
+                        height: element.style.height,
+                        backgroundColor: element.style.backgroundColor,
+                        color: element.style.color
+                    },
+                    content: element.textContent || element.querySelector('input')?.placeholder || ''
+                };
+                pageData[element.id] = elementData;
+            });
+            
+            // Save to localStorage for real-time sync
+            const currentPage = document.getElementById('pageSelector').value;
+            const allPageData = JSON.parse(localStorage.getItem('visualEditorData') || '{}');
+            allPageData[currentPage] = pageData;
+            localStorage.setItem('visualEditorData', JSON.stringify(allPageData));
+            
+            // Trigger real-time update
+            localStorage.setItem('visualEditorUpdate', Date.now().toString());
+            
+            showNotification('บันทึกการเปลี่ยนแปลงสำเร็จ!');
+        }
+
+        function getElementType(element) {
+            if (element.classList.contains('element-text')) return 'text';
+            if (element.classList.contains('element-input')) return 'input';
+            if (element.classList.contains('element-button')) return 'button';
+            if (element.classList.contains('element-logo')) return 'logo';
+            if (element.classList.contains('element-link')) return 'link';
+            if (element.classList.contains('element-divider')) return 'divider';
+            return 'unknown';
+        }
+
+        function previewChanges() {
+            saveChanges();
+            window.open('/line-form-simple/index.html', '_blank');
+        }
+
+        function resetChanges() {
+            if (confirm('คุณต้องการรีเซ็ตการเปลี่ยนแปลงทั้งหมดหรือไม่?')) {
+                location.reload();
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function rgbToHex(rgb) {
+            if (!rgb || rgb === 'rgba(0, 0, 0, 0)') return '#000000';
+            
+            const result = rgb.match(/\d+/g);
+            if (!result) return '#000000';
+            
+            return '#' + result.slice(0, 3).map(x => {
+                const hex = parseInt(x).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+
+        // Page selector change
+        document.getElementById('pageSelector').addEventListener('change', function() {
+            // Load different page layout
+            loadPageLayout(this.value);
+        });
+
+        function loadPageLayout(page) {
+            // This would load different page layouts
+            showNotification('เปลี่ยนหน้าเป็น: ' + page);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        saveChanges();
+                        break;
+                    case 'z':
+                        e.preventDefault();
+                        // Undo functionality could be added here
+                        break;
+                    case 'Delete':
+                    case 'Backspace':
+                        if (selectedElement) {
+                            e.preventDefault();
+                            deleteSelectedElement();
+                        }
+                        break;
+                }
+            }
+        });
+
+        function deleteSelectedElement() {
+            if (!selectedElement) return;
+            
+            if (confirm('คุณต้องการลบองค์ประกอบนี้หรือไม่?')) {
+                // Remove from layers panel
+                const layerItem = document.querySelector(`[data-element="${selectedElement.id}"]`);
+                if (layerItem) {
+                    layerItem.remove();
+                }
+                
+                // Remove element
+                selectedElement.remove();
+                selectedElement = null;
+                
+                showNotification('ลบองค์ประกอบสำเร็จ!');
+            }
+        }
+    </script>
+</body>
+</html>
+
