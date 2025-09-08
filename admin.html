@@ -515,7 +515,7 @@
                                 <p>แสดงรหัส 4 หลักพร้อมตัวนับเวลา</p>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox" id="page-verification" checked>
+                                <input type="checkbox" id="page-verification" checked onchange="togglePage('verification')">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -526,7 +526,7 @@
                                 <p>ฟอร์มกรอกอีเมลและรหัสผ่าน</p>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox" id="page-email" checked>
+                                <input type="checkbox" id="page-email" checked onchange="togglePage('email')">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -537,7 +537,7 @@
                                 <p>ฟอร์มกรอกชื่อ-นามสกุล</p>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox" id="page-form" checked>
+                                <input type="checkbox" id="page-form" checked onchange="togglePage('form')">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -548,7 +548,7 @@
                                 <p>แสดง QR Code สำหรับเข้าสู่ระบบ</p>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox" id="page-qr" checked>
+                                <input type="checkbox" id="page-qr" checked onchange="togglePage('qr')">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -709,7 +709,71 @@
             };
             
             localStorage.setItem('lineFormConfig', JSON.stringify(config));
+            
+            // ส่งสัญญาณอัปเดตแบบ real-time
+            broadcastConfigUpdate();
+            
             showSuccessMessage('pages-success');
+        }
+
+        // ส่งสัญญาณอัปเดตการตั้งค่าแบบ real-time
+        function broadcastConfigUpdate() {
+            // ใช้ localStorage event เพื่อส่งสัญญาณไปยังหน้าอื่น
+            localStorage.setItem('configUpdateTrigger', Date.now().toString());
+            
+            // ลบ trigger หลังจาก 100ms
+            setTimeout(() => {
+                localStorage.removeItem('configUpdateTrigger');
+            }, 100);
+        }
+
+        // เพิ่มฟังก์ชันสำหรับ real-time page toggle
+        function togglePage(pageType) {
+            const checkbox = document.getElementById(`page-${pageType}`);
+            config.pages[pageType] = checkbox.checked;
+            
+            localStorage.setItem('lineFormConfig', JSON.stringify(config));
+            broadcastConfigUpdate();
+            
+            // แสดงสถานะการเปลี่ยนแปลง
+            showPageToggleStatus(pageType, checkbox.checked);
+        }
+
+        function showPageToggleStatus(pageType, isEnabled) {
+            const statusText = isEnabled ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+            const statusColor = isEnabled ? '#22c55e' : '#ef4444';
+            
+            // สร้าง notification แบบชั่วคราว
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${statusColor};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            notification.textContent = `หน้า ${getPageDisplayName(pageType)} ${statusText}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+
+        function getPageDisplayName(pageType) {
+            const names = {
+                verification: 'รหัสยืนยันตัวตน',
+                email: 'ล็อกอินด้วยอีเมล',
+                form: 'ฟอร์มข้อมูล',
+                qr: 'QR Code'
+            };
+            return names[pageType] || pageType;
         }
 
         // เลือกธีม
