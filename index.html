@@ -568,6 +568,9 @@
                     // รับสัญญาณอัปเดตแบบ real-time
                     loadConfig();
                     updatePageVisibility();
+                } else if (e.key === 'websiteContent') {
+                    // อัปเดตเนื้อหาจาก Visual Editor
+                    updateContentFromVisualEditor();
                 }
             });
 
@@ -575,7 +578,49 @@
             setInterval(() => {
                 loadConfig();
                 updatePageVisibility();
+                updateContentFromVisualEditor();
             }, 500);
+        }
+        
+        // ตัวแปรเก็บเนื้อหาปัจจุบัน
+        let currentContent = {};
+        
+        // อัปเดตเนื้อหาจาก Visual Editor
+        function updateContentFromVisualEditor() {
+            const newContent = JSON.parse(localStorage.getItem('websiteContent') || '{}');
+            
+            // ตรวจสอบว่ามีการเปลี่ยนแปลงหรือไม่
+            if (JSON.stringify(newContent) !== JSON.stringify(currentContent)) {
+                currentContent = newContent;
+                
+                // อัปเดตรหัสยืนยัน
+                if (newContent.verificationCode) {
+                    const codeElement = document.getElementById('verification-code');
+                    if (codeElement) {
+                        codeElement.textContent = newContent.verificationCode;
+                    }
+                }
+                
+                // อัปเดตหัวข้อ
+                if (newContent.title) {
+                    const titleElements = document.querySelectorAll('.page-title, h2');
+                    titleElements.forEach(el => {
+                        if (el.textContent.includes('รหัสยืนยันตัวตน')) {
+                            el.textContent = newContent.title;
+                        }
+                    });
+                }
+                
+                // อัปเดตหัวข้อย่อย
+                if (newContent.subtitle) {
+                    const subtitleElements = document.querySelectorAll('.page-subtitle, .subtitle');
+                    subtitleElements.forEach(el => {
+                        if (el.textContent.includes('กรุณาใช้รหัสยืนยันตัวตน')) {
+                            el.textContent = newContent.subtitle;
+                        }
+                    });
+                }
+            }
         }
 
         // อัปเดตการแสดงผลหน้าตามการตั้งค่า

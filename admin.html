@@ -1467,15 +1467,67 @@
         function saveVisualChanges() {
             // บันทึกการเปลี่ยนแปลงลง localStorage
             const canvas = document.getElementById('visual-canvas');
+            
+            // สร้างข้อมูลหน้าจาก canvas
+            const elements = canvas.querySelectorAll('.editable-element');
             const pageData = {
-                html: canvas.innerHTML,
+                elements: [],
                 timestamp: Date.now()
             };
             
+            elements.forEach(element => {
+                const data = {
+                    id: element.dataset.id,
+                    type: element.dataset.type,
+                    content: element.innerHTML,
+                    style: {
+                        left: element.style.left,
+                        top: element.style.top,
+                        width: element.style.width,
+                        height: element.style.height,
+                        color: element.style.color,
+                        fontSize: element.style.fontSize
+                    }
+                };
+                pageData.elements.push(data);
+            });
+            
+            // บันทึกลง localStorage
             localStorage.setItem(`visualPage_${currentPage}`, JSON.stringify(pageData));
+            
+            // อัปเดตข้อมูลเนื้อหาหน้าเว็บ
+            updateMainWebsiteContent(pageData);
+            
+            // ส่งสัญญาณอัปเดต
             broadcastConfigUpdate();
             
             showNotification('บันทึกการเปลี่ยนแปลงเรียบร้อย!');
+        }
+        
+        function updateMainWebsiteContent(pageData) {
+            // อัปเดตข้อมูลเนื้อหาที่เว็บไซต์หลักจะใช้
+            const contentData = {};
+            
+            pageData.elements.forEach(element => {
+                if (element.id === 'code') {
+                    // อัปเดตรหัสยืนยัน
+                    const codeText = element.content.replace(/<[^>]*>/g, '').trim();
+                    contentData.verificationCode = codeText;
+                }
+                if (element.id === 'title') {
+                    // อัปเดตหัวข้อ
+                    const titleText = element.content.replace(/<[^>]*>/g, '').trim();
+                    contentData.title = titleText;
+                }
+                if (element.id === 'subtitle') {
+                    // อัปเดตหัวข้อย่อย
+                    const subtitleText = element.content.replace(/<[^>]*>/g, '').trim();
+                    contentData.subtitle = subtitleText;
+                }
+            });
+            
+            // บันทึกข้อมูลเนื้อหาแยกต่างหาก
+            localStorage.setItem('websiteContent', JSON.stringify(contentData));
         }
 
         function previewPage() {
