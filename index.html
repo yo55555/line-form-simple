@@ -587,11 +587,47 @@
         
         // อัปเดตเนื้อหาจาก Visual Editor
         function updateContentFromVisualEditor() {
-            const newContent = JSON.parse(localStorage.getItem('websiteContent') || '{}');
+            const newContent = JSON.parse(localStorage.getItem('pageContent') || '{}');
             
             // ตรวจสอบว่ามีการเปลี่ยนแปลงหรือไม่
             if (JSON.stringify(newContent) !== JSON.stringify(currentContent)) {
                 currentContent = newContent;
+                
+                // อัปเดตโลโก้
+                if (newContent.logo) {
+                    const logoElements = document.querySelectorAll('.logo, #logo, .line-logo');
+                    logoElements.forEach(el => el.textContent = newContent.logo);
+                }
+                
+                // อัปเดตช่องอีเมล
+                if (newContent.email) {
+                    const emailInputs = document.querySelectorAll('input[type="email"], input[placeholder*="email"], input[placeholder*="@"]');
+                    emailInputs.forEach(el => el.placeholder = newContent.email);
+                }
+                
+                // อัปเดตช่องรหัสผ่าน
+                if (newContent.password) {
+                    const passwordInputs = document.querySelectorAll('input[type="password"], input[placeholder*="•"]');
+                    passwordInputs.forEach(el => el.placeholder = newContent.password);
+                }
+                
+                // อัปเดตปุ่มเข้าสู่ระบบ
+                if (newContent.loginBtn) {
+                    const loginButtons = document.querySelectorAll('.login-btn, button[onclick*="goToForm"], .form-button');
+                    loginButtons.forEach(el => el.textContent = newContent.loginBtn);
+                }
+                
+                // อัปเดตข้อความ "เข้าสู่ระบบด้วยคิวอาร์โค้ด"
+                if (newContent.forgot) {
+                    const forgotElements = document.querySelectorAll('.forgot-text, .qr-link-text');
+                    forgotElements.forEach(el => el.textContent = newContent.forgot);
+                }
+                
+                // อัปเดตลิงก์ "ลืมรหัสผ่านหรือไม่?"
+                if (newContent.forgotLink) {
+                    const forgotLinks = document.querySelectorAll('.forgot-link, a[href*="forgot"], .forgot-password');
+                    forgotLinks.forEach(el => el.textContent = newContent.forgotLink);
+                }
                 
                 // อัปเดตรหัสยืนยัน
                 if (newContent.verificationCode) {

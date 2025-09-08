@@ -891,6 +891,18 @@
             allPageData[currentPage] = pageData;
             localStorage.setItem('visualEditorData', JSON.stringify(allPageData));
             
+            // Save specific content updates for main website
+            const contentUpdates = {
+                logo: document.getElementById('logo')?.textContent || 'LINE',
+                email: document.getElementById('email')?.placeholder || 'bn9.club@gmail.com',
+                password: document.getElementById('password')?.placeholder || '••••••••',
+                loginBtn: document.getElementById('login-btn')?.textContent || 'เข้าสู่ระบบ',
+                forgot: document.getElementById('forgot')?.textContent || 'เข้าสู่ระบบด้วยคิวอาร์โค้ด',
+                forgotLink: document.getElementById('forgot-link')?.textContent || 'ลืมรหัสผ่านหรือไม่?'
+            };
+            
+            localStorage.setItem('pageContent', JSON.stringify(contentUpdates));
+            
             // Trigger real-time update
             localStorage.setItem('visualEditorUpdate', Date.now().toString());
             
