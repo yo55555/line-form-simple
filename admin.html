@@ -1114,6 +1114,11 @@
             const elements = document.querySelectorAll('.editable-element');
             
             elements.forEach(element => {
+                // Remove existing event listeners
+                element.removeEventListener('click', selectElementHandler);
+                element.removeEventListener('dblclick', editElementHandler);
+                element.removeEventListener('dragstart', dragStartHandler);
+                
                 // Click to select
                 element.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -1128,9 +1133,15 @@
 
                 // Make draggable
                 element.draggable = true;
+                element.style.cursor = 'move';
                 element.addEventListener('dragstart', function(e) {
                     draggedElement = this;
                     e.dataTransfer.effectAllowed = 'move';
+                    this.style.opacity = '0.5';
+                });
+
+                element.addEventListener('dragend', function(e) {
+                    this.style.opacity = '1';
                 });
 
                 // Add resize handles
@@ -1139,6 +1150,11 @@
 
             // Canvas drop zone
             const canvas = document.getElementById('visual-canvas');
+            
+            // Remove existing listeners
+            canvas.removeEventListener('dragover', dragOverHandler);
+            canvas.removeEventListener('drop', dropHandler);
+            
             canvas.addEventListener('dragover', function(e) {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
@@ -1148,14 +1164,31 @@
                 e.preventDefault();
                 if (draggedElement) {
                     const rect = canvas.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
+                    const x = e.clientX - rect.left - 50; // ปรับตำแหน่งให้ตรงกับเมาส์
+                    const y = e.clientY - rect.top - 25;
                     
                     draggedElement.style.position = 'absolute';
-                    draggedElement.style.left = x + 'px';
-                    draggedElement.style.top = y + 'px';
+                    draggedElement.style.left = Math.max(0, x) + 'px';
+                    draggedElement.style.top = Math.max(0, y) + 'px';
+                    
+                    // อัปเดต properties panel
+                    if (selectedElement === draggedElement) {
+                        showPropertiesPanel(draggedElement);
+                    }
                     
                     draggedElement = null;
+                }
+            });
+
+            // Click canvas to deselect
+            canvas.addEventListener('click', function(e) {
+                if (e.target === canvas) {
+                    document.querySelectorAll('.editable-element').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    selectedElement = null;
+                    document.getElementById('properties-panel').style.display = 'none';
+                    updateLayersPanel();
                 }
             });
         }
@@ -1222,7 +1255,9 @@
             }
 
             if (type === 'number') {
-                const numberContent = element.textContent;
+                // หาค่าตัวเลขจาก span หรือ textContent
+                const numberSpan = element.querySelector('span');
+                const numberContent = numberSpan ? numberSpan.textContent : element.textContent;
                 propertiesHTML += `
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-size: 12px; color: #6b7280;">ตัวเลข:</label>
@@ -1338,7 +1373,13 @@
         function updateNumberContent() {
             if (!selectedElement) return;
             const content = document.getElementById('number-content').value;
-            selectedElement.textContent = content;
+            // หา span ที่มีตัวเลขภายใน element
+            const numberSpan = selectedElement.querySelector('span');
+            if (numberSpan) {
+                numberSpan.textContent = content;
+            } else {
+                selectedElement.textContent = content;
+            }
         }
 
         function updateNumberColor() {
