@@ -474,7 +474,7 @@
                 // บันทึกข้อมูลฟอร์ม
                 saveFormData();
             } else {
-                showPage('verification-page');
+                goToFirstAvailablePage();
             }
         }
 
@@ -580,6 +580,24 @@
 
         // อัปเดตการแสดงผลหน้าตามการตั้งค่า
         function updatePageVisibility() {
+            // ซ่อน/แสดงปุ่มตามการตั้งค่า
+            const emailButton = document.querySelector('button[onclick="goToEmailPage()"]');
+            const qrButton = document.querySelector('button[onclick="goToQRPage()"]');
+            const qrLink = document.querySelector('a[onclick="goToQRPage()"]');
+            
+            // ซ่อน/แสดงปุ่มอีเมล
+            if (emailButton) {
+                emailButton.style.display = config.pages.email ? 'block' : 'none';
+            }
+            
+            // ซ่อน/แสดงปุ่ม QR
+            if (qrButton) {
+                qrButton.style.display = config.pages.qr ? 'block' : 'none';
+            }
+            if (qrLink) {
+                qrLink.style.display = config.pages.qr ? 'inline' : 'none';
+            }
+            
             // ตรวจสอบว่าหน้าปัจจุบันยังเปิดใช้งานอยู่หรือไม่
             const currentPage = getCurrentPage();
             
