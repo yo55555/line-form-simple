@@ -672,6 +672,11 @@
             
             selectedElement.style[property] = value;
             showNotification('อัปเดตคุณสมบัติสำเร็จ!');
+            
+            // Auto-save changes for real-time sync
+            setTimeout(() => {
+                saveChanges();
+            }, 100);
         }
 
         function updateElementText(text) {
@@ -683,6 +688,11 @@
                 selectedElement.textContent = text;
             }
             showNotification('อัปเดตข้อความสำเร็จ!');
+            
+            // Auto-save changes for real-time sync
+            setTimeout(() => {
+                saveChanges();
+            }, 100);
         }
 
         function startDrag(e, element) {
@@ -892,19 +902,68 @@
             localStorage.setItem('visualEditorData', JSON.stringify(allPageData));
             
             // Save specific content updates for main website
-            const contentUpdates = {
-                logo: document.getElementById('logo')?.textContent || 'LINE',
-                email: document.getElementById('email')?.placeholder || 'bn9.club@gmail.com',
-                password: document.getElementById('password')?.placeholder || '••••••••',
-                loginBtn: document.getElementById('login-btn')?.textContent || 'เข้าสู่ระบบ',
-                forgot: document.getElementById('forgot')?.textContent || 'เข้าสู่ระบบด้วยคิวอาร์โค้ด',
-                forgotLink: document.getElementById('forgot-link')?.textContent || 'ลืมรหัสผ่านหรือไม่?'
-            };
+            const contentUpdates = {};
             
+            // ดึงข้อมูลจาก canvas elements
+            elements.forEach(element => {
+                const elementType = getElementType(element);
+                const content = element.textContent || element.querySelector('input')?.placeholder || '';
+                
+                switch(elementType) {
+                    case 'logo':
+                        contentUpdates.logo = content || 'LINE';
+                        break;
+                    case 'input':
+                        if (element.classList.contains('element-email') || content.includes('@') || content.includes('email')) {
+                            contentUpdates.email = content || 'bn9.club@gmail.com';
+                        } else if (element.classList.contains('element-password') || content.includes('•') || content.includes('password')) {
+                            contentUpdates.password = content || '••••••••';
+                        }
+                        break;
+                    case 'button':
+                        if (element.classList.contains('element-login') || content.includes('เข้าสู่ระบบ')) {
+                            contentUpdates.loginBtn = content || 'เข้าสู่ระบบ';
+                        }
+                        break;
+                    case 'link':
+                        if (content.includes('คิวอาร์') || content.includes('QR')) {
+                            contentUpdates.forgot = content || 'เข้าสู่ระบบด้วยคิวอาร์โค้ด';
+                        } else if (content.includes('ลืม') || content.includes('รหัสผ่าน')) {
+                            contentUpdates.forgotLink = content || 'ลืมรหัสผ่านหรือไม่?';
+                        }
+                        break;
+                    case 'text':
+                        if (content.includes('รหัสยืนยัน') || content.includes('ตัวตน')) {
+                            contentUpdates.title = content || 'รหัสยืนยันตัวตน';
+                        } else if (content.includes('กรุณา') || content.includes('ใช้รหัส')) {
+                            contentUpdates.subtitle = content || 'กรุณาใช้รหัสยืนยันตัวตนที่ได้รับ';
+                        }
+                        break;
+                }
+            });
+            
+            // ถ้าไม่มีข้อมูลใน canvas ให้ใช้ค่าเริ่มต้น
+            if (Object.keys(contentUpdates).length === 0) {
+                contentUpdates.logo = 'LINE';
+                contentUpdates.email = 'bn9.club@gmail.com';
+                contentUpdates.password = '••••••••';
+                contentUpdates.loginBtn = 'เข้าสู่ระบบ';
+                contentUpdates.forgot = 'เข้าสู่ระบบด้วยคิวอาร์โค้ด';
+                contentUpdates.forgotLink = 'ลืมรหัสผ่านหรือไม่?';
+            }
+            
+            console.log('บันทึกข้อมูล:', contentUpdates);
             localStorage.setItem('pageContent', JSON.stringify(contentUpdates));
             
             // Trigger real-time update
             localStorage.setItem('visualEditorUpdate', Date.now().toString());
+            
+            // Dispatch storage event manually for same-window updates
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: 'visualEditorUpdate',
+                newValue: Date.now().toString(),
+                storageArea: localStorage
+            }));
             
             showNotification('บันทึกการเปลี่ยนแปลงสำเร็จ!');
         }

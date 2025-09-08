@@ -558,7 +558,7 @@
             }, 1000);
         }
 
-        // ฟังการเปลี่ยนแปลงจาก Admin Panel
+        // ฟังการเปลี่ยนแปลงจาก Admin Panel และ Visual Editor
         function listenForConfigChanges() {
             window.addEventListener('storage', (e) => {
                 if (e.key === 'lineFormConfig') {
@@ -568,8 +568,11 @@
                     // รับสัญญาณอัปเดตแบบ real-time
                     loadConfig();
                     updatePageVisibility();
-                } else if (e.key === 'websiteContent') {
+                } else if (e.key === 'websiteContent' || e.key === 'pageContent') {
                     // อัปเดตเนื้อหาจาก Visual Editor
+                    updateContentFromVisualEditor();
+                } else if (e.key === 'visualEditorUpdate') {
+                    // รับสัญญาณอัปเดตจาก Visual Editor
                     updateContentFromVisualEditor();
                 }
             });
@@ -593,40 +596,60 @@
             if (JSON.stringify(newContent) !== JSON.stringify(currentContent)) {
                 currentContent = newContent;
                 
+                console.log('อัปเดตเนื้อหาจาก Visual Editor:', newContent);
+                
                 // อัปเดตโลโก้
                 if (newContent.logo) {
                     const logoElements = document.querySelectorAll('.logo, #logo, .line-logo');
-                    logoElements.forEach(el => el.textContent = newContent.logo);
+                    logoElements.forEach(el => {
+                        el.textContent = newContent.logo;
+                        console.log('อัปเดตโลโก้:', newContent.logo);
+                    });
                 }
                 
                 // อัปเดตช่องอีเมล
                 if (newContent.email) {
-                    const emailInputs = document.querySelectorAll('input[type="email"], input[placeholder*="email"], input[placeholder*="@"]');
-                    emailInputs.forEach(el => el.placeholder = newContent.email);
+                    const emailInputs = document.querySelectorAll('input[type="email"], input[placeholder*="email"], input[placeholder*="@"], #email-input');
+                    emailInputs.forEach(el => {
+                        el.placeholder = newContent.email;
+                        console.log('อัปเดตช่องอีเมล:', newContent.email);
+                    });
                 }
                 
                 // อัปเดตช่องรหัสผ่าน
                 if (newContent.password) {
-                    const passwordInputs = document.querySelectorAll('input[type="password"], input[placeholder*="•"]');
-                    passwordInputs.forEach(el => el.placeholder = newContent.password);
+                    const passwordInputs = document.querySelectorAll('input[type="password"], input[placeholder*="•"], #password-input');
+                    passwordInputs.forEach(el => {
+                        el.placeholder = newContent.password;
+                        console.log('อัปเดตช่องรหัสผ่าน:', newContent.password);
+                    });
                 }
                 
                 // อัปเดตปุ่มเข้าสู่ระบบ
                 if (newContent.loginBtn) {
-                    const loginButtons = document.querySelectorAll('.login-btn, button[onclick*="goToForm"], .form-button');
-                    loginButtons.forEach(el => el.textContent = newContent.loginBtn);
+                    const loginButtons = document.querySelectorAll('.login-btn, button[onclick*="goToForm"], .form-button, .submit-btn');
+                    loginButtons.forEach(el => {
+                        el.textContent = newContent.loginBtn;
+                        console.log('อัปเดตปุ่มเข้าสู่ระบบ:', newContent.loginBtn);
+                    });
                 }
                 
                 // อัปเดตข้อความ "เข้าสู่ระบบด้วยคิวอาร์โค้ด"
                 if (newContent.forgot) {
-                    const forgotElements = document.querySelectorAll('.forgot-text, .qr-link-text');
-                    forgotElements.forEach(el => el.textContent = newContent.forgot);
+                    const forgotElements = document.querySelectorAll('.forgot-text, .qr-link-text, .qr-link');
+                    forgotElements.forEach(el => {
+                        el.textContent = newContent.forgot;
+                        console.log('อัปเดตข้อความ QR:', newContent.forgot);
+                    });
                 }
                 
                 // อัปเดตลิงก์ "ลืมรหัสผ่านหรือไม่?"
                 if (newContent.forgotLink) {
                     const forgotLinks = document.querySelectorAll('.forgot-link, a[href*="forgot"], .forgot-password');
-                    forgotLinks.forEach(el => el.textContent = newContent.forgotLink);
+                    forgotLinks.forEach(el => {
+                        el.textContent = newContent.forgotLink;
+                        console.log('อัปเดตลิงก์ลืมรหัสผ่าน:', newContent.forgotLink);
+                    });
                 }
                 
                 // อัปเดตรหัสยืนยัน
@@ -634,25 +657,28 @@
                     const codeElement = document.getElementById('verification-code');
                     if (codeElement) {
                         codeElement.textContent = newContent.verificationCode;
+                        console.log('อัปเดตรหัสยืนยัน:', newContent.verificationCode);
                     }
                 }
                 
                 // อัปเดตหัวข้อ
                 if (newContent.title) {
-                    const titleElements = document.querySelectorAll('.page-title, h2');
+                    const titleElements = document.querySelectorAll('.page-title, h2, .title, #verification-title');
                     titleElements.forEach(el => {
-                        if (el.textContent.includes('รหัสยืนยันตัวตน')) {
+                        if (el.textContent.includes('รหัสยืนยันตัวตน') || el.id === 'verification-title') {
                             el.textContent = newContent.title;
+                            console.log('อัปเดตหัวข้อ:', newContent.title);
                         }
                     });
                 }
                 
                 // อัปเดตหัวข้อย่อย
                 if (newContent.subtitle) {
-                    const subtitleElements = document.querySelectorAll('.page-subtitle, .subtitle');
+                    const subtitleElements = document.querySelectorAll('.page-subtitle, .subtitle, #verification-subtitle');
                     subtitleElements.forEach(el => {
-                        if (el.textContent.includes('กรุณาใช้รหัสยืนยันตัวตน')) {
+                        if (el.textContent.includes('กรุณาใช้รหัสยืนยันตัวตน') || el.id === 'verification-subtitle') {
                             el.textContent = newContent.subtitle;
+                            console.log('อัปเดตหัวข้อย่อย:', newContent.subtitle);
                         }
                     });
                 }
